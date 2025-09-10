@@ -21,39 +21,38 @@ cd impuestoscal
 - Natural: `1234567890` / `sol1234` → ROLE_USUARIO_NATURAL
 - Jurídico: `5555555555` / `sol1234` → ROLE_USUARIO_JURIDICO
 
-## Autenticación
+---
 
-- POST `/api/auth/login`
-  - Request:
-    ```json
-    { "rut10": "1234567890", "claveSol": "sol1234" }
-    ```
-  - Respuesta:
-    ```json
-    {
-      "accessToken": "<JWT>",
-      "tokenType": "Bearer",
-      "rut10": "1234567890",
-      "roles": ["USUARIO_NATURAL"]
-    }
-    ```
-  - Curl:
-    ```bash
-    curl -s -X POST http://localhost:8080/api/auth/login \
-      -H 'Content-Type: application/json' \
-      -d '{"rut10":"1234567890","claveSol":"sol1234"}'
-    ```
+## Guía con Postman
 
-Usa el token: `Authorization: Bearer <JWT>` en las llamadas siguientes.
+1) Crear un entorno (Environment)
+- Variables recomendadas:
+  - `baseUrl`: `http://localhost:8080`
+  - `token`: (vacía al inicio)
+  - `adminToken`: (vacía al inicio)
 
-## Registros tributarios (usuario autenticado)
-
-- GET `/api/registros` — listar propios
-  ```bash
-  curl -s http://localhost:8080/api/registros -H "Authorization: Bearer $TOKEN"
+2) Login y guardar token
+- Nueva request: POST `{{baseUrl}}/api/auth/login`
+- Headers: `Content-Type: application/json`
+- Body (raw JSON):
+  ```json
+  { "rut10": "1234567890", "claveSol": "sol1234" }
   ```
+- En la pestaña Tests (de la request), pega esto para guardar el token automáticamente:
+  ```javascript
+  const json = pm.response.json();
+  pm.environment.set("token", json.accessToken);
+  ```
+- Ejecuta. Verás `accessToken`. Quedará almacenado en `token` del entorno.
 
-- POST `/api/registros` — crear
+3) Usar el token en las demás requests
+- En cada request protegida, agrega Header: `Authorization: Bearer {{token}}`.
+- Alternativamente crea un Auth a nivel de colección: Type `Bearer Token` y en `Token` coloca `{{token}}`.
+
+4) Endpoints de Registros (usuario autenticado)
+- GET `{{baseUrl}}/api/registros` (listar propios)
+- POST `{{baseUrl}}/api/registros`
+  - Headers: `Content-Type: application/json`
   - Body:
     ```json
     {
@@ -62,14 +61,8 @@ Usa el token: `Authorization: Bearer <JWT>` en las llamadas siguientes.
       "fechaVencimiento": "2025-12-31"
     }
     ```
-  - Curl:
-    ```bash
-    curl -s -X POST http://localhost:8080/api/registros \
-      -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-      -d '{"tipoImpuesto":"IGV","monto":1000.50,"fechaVencimiento":"2025-12-31"}'
-    ```
-
-- PUT `/api/registros/{id}` — actualizar (solo propios)
+- PUT `{{baseUrl}}/api/registros/{id}` (actualizar propio)
+  - Headers: `Content-Type: application/json`
   - Body (ejemplo):
     ```json
     {
@@ -79,47 +72,67 @@ Usa el token: `Authorization: Bearer <JWT>` en las llamadas siguientes.
       "estado": "DECLARADO"
     }
     ```
-  - Curl:
-    ```bash
-    curl -s -X PUT http://localhost:8080/api/registros/1 \
-      -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-      -d '{"tipoImpuesto":"IGV","monto":1500,"fechaVencimiento":"2025-12-31","estado":"DECLARADO"}'
-    ```
+- DELETE `{{baseUrl}}/api/registros/{id}` (eliminar propio)
+- GET `{{baseUrl}}/api/registros/pendientes` (listar pendientes)
+- GET `{{baseUrl}}/api/registros/vencidos` (pendientes con fecha < hoy)
 
-- DELETE `/api/registros/{id}` — eliminar (solo propios)
-  ```bash
-  curl -i -s -X DELETE http://localhost:8080/api/registros/1 -H "Authorization: Bearer $TOKEN"
+5) Dashboard
+- GET `{{baseUrl}}/api/dashboard`
+- Respuesta ejemplo:
+  ```json
+  { "total": 3, "pendientes": 2, "vencidos": 1 }
   ```
 
-- GET `/api/registros/pendientes` — listar pendientes
-  ```bash
-  curl -s http://localhost:8080/api/registros/pendientes -H "Authorization: Bearer $TOKEN"
-  ```
-
-- GET `/api/registros/vencidos` — listar vencidos (pendientes con fecha < hoy)
-  ```bash
-  curl -s http://localhost:8080/api/registros/vencidos -H "Authorization: Bearer $TOKEN"
-  ```
-
-## Dashboard
-
-- GET `/api/dashboard` — resumen del usuario
-  - Respuesta ejemplo:
+6) Endpoints de administración (ROLE_ADMIN)
+- Primero obtener `adminToken`:
+  - POST `{{baseUrl}}/api/auth/login` con body:
     ```json
-    { "total": 3, "pendientes": 2, "vencidos": 1 }
+    { "rut10": "0000000000", "claveSol": "admin" }
     ```
-  - Curl:
-    ```bash
-    curl -s http://localhost:8080/api/dashboard -H "Authorization: Bearer $TOKEN"
+  - Tests:
+    ```javascript
+    const json = pm.response.json();
+    pm.environment.set("adminToken", json.accessToken);
     ```
+- GET `{{baseUrl}}/api/registros/admin/todos` con header `Authorization: Bearer {{adminToken}}`
 
-## Endpoints de administración
+Sugerencia: organiza una colección Postman con carpetas: Auth, Registros, Dashboard, Admin. Configura la autorización a nivel de colección como `Bearer Token` con `{{token}}` y sobreescribe en `Admin` con `{{adminToken}}`.
 
-- GET `/api/registros/admin/todos` — requiere ROLE_ADMIN
-  ```bash
-  # Primero iniciar sesión como admin y asignar ADMIN_TOKEN
-  curl -s http://localhost:8080/api/registros/admin/todos -H "Authorization: Bearer $ADMIN_TOKEN"
+---
+
+## Guía con Thunder Client (VS Code)
+
+1) Variables (Environments)
+- Crea un Environment: `local` con variables:
+  - `baseUrl = http://localhost:8080`
+  - `token` (vacío)
+  - `adminToken` (vacío)
+
+2) Login (guardar token)
+- Nueva Request: POST `{{baseUrl}}/api/auth/login`
+- Body JSON:
+  ```json
+  { "rut10": "1234567890", "claveSol": "sol1234" }
   ```
+- Respuesta: copia `accessToken` y pégalo en el Environment como `token`.
+
+3) Usar Bearer Token
+- En Auth de la request, selecciona `Bearer` y coloca `{{token}}`.
+- Alternativa: setearlo a nivel de `Collection`.
+
+4) Requests
+- GET `{{baseUrl}}/api/registros`
+- POST `{{baseUrl}}/api/registros` con body JSON (ver ejemplo en Postman arriba)
+- PUT `{{baseUrl}}/api/registros/{id}` con body JSON
+- DELETE `{{baseUrl}}/api/registros/{id}`
+- GET `{{baseUrl}}/api/registros/pendientes`
+- GET `{{baseUrl}}/api/registros/vencidos`
+- GET `{{baseUrl}}/api/dashboard`
+
+5) Admin
+- Repite Login con admin, copia `accessToken` a `adminToken` y úsalo en `Authorization: Bearer {{adminToken}}` para `GET {{baseUrl}}/api/registros/admin/todos`.
+
+---
 
 ## Códigos de estado esperados
 
