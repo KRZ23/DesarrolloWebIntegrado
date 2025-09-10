@@ -1,10 +1,11 @@
 package com.devintegrado.impuestoscal.repository;
 
-import com.devintegrado.impuestoscal.model.Rol;
-import com.devintegrado.impuestoscal.model.RoleName;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import com.devintegrado.impuestoscal.model.Rol;
+import com.devintegrado.impuestoscal.model.RoleName;
 
 public interface RolRepository extends JpaRepository<Rol, Long> {
     Optional<Rol> findByNombre(RoleName nombre);
