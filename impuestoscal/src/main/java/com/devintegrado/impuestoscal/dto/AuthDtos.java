@@ -1,10 +1,14 @@
 package com.devintegrado.impuestoscal.dto;
 
+import java.util.Set;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.*;
-
-import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public final class AuthDtos {
     private AuthDtos() {}
