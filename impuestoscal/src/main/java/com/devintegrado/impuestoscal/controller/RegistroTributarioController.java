@@ -1,5 +1,6 @@
 package com.devintegrado.impuestoscal.controller;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import com.devintegrado.impuestoscal.dto.RegistroTributarioDtos;
 import com.devintegrado.impuestoscal.model.EstadoRegistro;
 import com.devintegrado.impuestoscal.model.RegistroTributario;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/registros")
 public class RegistroTributarioController {

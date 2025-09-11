@@ -45,14 +45,14 @@
           <div class="space-y-4">
             <div class="bg-[var(--card-background-color)] p-4 rounded-md flex items-center gap-4">
               <div>
-                <p class="font-medium">Título de tarea</p>
-                <p class="text-sm text-[var(--text-secondary)]">Fecha de vencimiento</p>
+                <p class="font-medium">Pendientes</p>
+                <p class="text-sm text-[var(--text-secondary)]">{{ pendientes }}</p>
               </div>
             </div>
             <div class="bg-[var(--card-background-color)] p-4 rounded-md flex items-center gap-4">
               <div>
-                <p class="font-medium">Título de tarea</p>
-                <p class="text-sm text-[var(--text-secondary)]">Fecha de vencimiento</p>
+                <p class="font-medium">Vencidos</p>
+                <p class="text-sm text-[var(--text-secondary)]">{{ vencidos }}</p>
               </div>
             </div>
           </div>
@@ -63,14 +63,8 @@
           <div class="space-y-4">
             <div class="bg-[var(--card-background-color)] p-4 rounded-md flex items-center gap-4">
               <div>
-                <p class="font-medium">Título de vencimiento</p>
-                <p class="text-sm text-[var(--text-secondary)]">Fecha</p>
-              </div>
-            </div>
-            <div class="bg-[var(--card-background-color)] p-4 rounded-md flex items-center gap-4">
-              <div>
-                <p class="font-medium">Título de vencimiento</p>
-                <p class="text-sm text-[var(--text-secondary)]">Fecha</p>
+                <p class="font-medium">Ejemplo de vencimiento</p>
+                <p class="text-sm text-[var(--text-secondary)]">--</p>
               </div>
             </div>
           </div>
@@ -85,19 +79,19 @@
             <div>
               <div class="flex justify-between items-center mb-1">
                 <p class="text-sm font-medium">Impuestos Pagados</p>
-                <p class="text-lg font-bold text-green-400">--</p>
+                <p class="text-lg font-bold text-green-400">{{ total - pendientes - vencidos }}</p>
               </div>
             </div>
             <div>
               <div class="flex justify-between items-center mb-1">
                 <p class="text-sm font-medium">Impuestos Pendientes</p>
-                <p class="text-lg font-bold text-orange-400">--</p>
+                <p class="text-lg font-bold text-orange-400">{{ pendientes }}</p>
               </div>
             </div>
             <div class="border-t border-slate-700 my-4"></div>
             <div class="flex justify-between items-center font-bold text-lg">
               <p>Total de Impuestos</p>
-              <p>--</p>
+              <p>{{ total }}</p>
             </div>
           </div>
         </section>
@@ -117,3 +111,5 @@
     </div>
   </main>
 </div>
+
+
