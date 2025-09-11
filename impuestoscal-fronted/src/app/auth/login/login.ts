@@ -1,13 +1,33 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { Navbar } from "../../reu/navbar/navbar";
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms'; 
+import { Router } from '@angular/router';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-login',
-  imports: [RouterModule],
+  standalone: true, 
+  imports: [RouterModule, CommonModule, FormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrls: ['./login.css'] 
 })
-export class Login {
+export class LoginComponent {
+  rut10 = '';
+  claveSol = '';
 
+  constructor(private authService: AuthService, private router: Router) {}
+
+  onSubmit() {
+    this.authService.login(this.rut10, this.claveSol).subscribe({
+      next: (res) => {
+        localStorage.setItem('token', res.accessToken);
+        this.router.navigate(['/inicio']);
+      },
+      error: () => {
+        alert('Credenciales incorrectas');
+      }
+    });
+  }
 }
+
