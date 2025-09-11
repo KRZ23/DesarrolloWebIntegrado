@@ -5,6 +5,11 @@ import { Home } from './dashboard/home/home';
 
 export const routes: Routes = [
     {
+        path: '',
+        redirectTo: '/iniciar-sesion',
+        pathMatch: 'full'
+    },
+    {
         path: 'iniciar-sesion',
         component: Login
     },
@@ -15,6 +20,5 @@ export const routes: Routes = [
     {
         path: 'inicio',
         component: Home
-    },
-
+    }
 ];
