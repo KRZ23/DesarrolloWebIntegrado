@@ -14,7 +14,7 @@ export class DashboardService {
   getResumen(): Observable<any> {
     let headers = new HttpHeaders();
 
-    // ✅ Evita error cuando corre en Node (SSR o Vite build)
+    // para error SSR 
     if (typeof window !== 'undefined' && window.localStorage) {
       const token = localStorage.getItem('token');
       if (token) {
