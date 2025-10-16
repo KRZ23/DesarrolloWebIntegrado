@@ -1,0 +1,115 @@
+<div class="flex min-h-screen bg-[var(--background-color)] text-[var(--text-primary)]">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-slate-900 p-6 flex flex-col justify-between">
+    <div>
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold">No se </h1>
+        <p class="text-[var(--text-secondary)] text-sm">Bienvenido</p>
+      </div>
+      <nav class="flex flex-col gap-2">
+        <a class="flex items-center gap-3 px-4 py-2 rounded-md bg-[var(--primary-color)] text-white font-medium" href="#">
+          <span>Inicio</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors" href="#">
+          <span>Declaraciones</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors" href="#">
+          <span>Pagos</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors" href="#">
+          <span>Notificaciones</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors" href="#">
+          <span>Perfil</span>
+        </a>
+      </nav>
+    </div>
+    <div>
+      <a class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors text-[var(--text-secondary)]" href="#">
+        <span>Ayuda</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-8">
+    <header class="mb-8">
+      <h1 class="text-4xl font-bold">Panel de Control</h1>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Sección izquierda -->
+      <div class="lg:col-span-2">
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold mb-4">Tareas Pendientes</h2>
+          <div class="space-y-4">
+            <div class="bg-[var(--card-background-color)] p-4 rounded-md flex items-center gap-4">
+              <div>
+                <p class="font-medium">Pendientes</p>
+                <p class="text-sm text-[var(--text-secondary)]">{{ pendientes }}</p>
+              </div>
+            </div>
+            <div class="bg-[var(--card-background-color)] p-4 rounded-md flex items-center gap-4">
+              <div>
+                <p class="font-medium">Vencidos</p>
+                <p class="text-sm text-[var(--text-secondary)]">{{ vencidos }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="text-2xl font-semibold mb-4">Próximos Vencimientos</h2>
+          <div class="space-y-4">
+            <div class="bg-[var(--card-background-color)] p-4 rounded-md flex items-center gap-4">
+              <div>
+                <p class="font-medium">Ejemplo de vencimiento</p>
+                <p class="text-sm text-[var(--text-secondary)]">--</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Sección derecha -->
+      <div class="lg:col-span-1">
+        <section class="bg-[var(--card-background-color)] p-6 rounded-lg mb-8">
+          <h2 class="text-xl font-semibold mb-4">Estado de Impuestos</h2>
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <p class="text-sm font-medium">Impuestos Pagados</p>
+                <p class="text-lg font-bold text-green-400">{{ total - pendientes - vencidos }}</p>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <p class="text-sm font-medium">Impuestos Pendientes</p>
+                <p class="text-lg font-bold text-orange-400">{{ pendientes }}</p>
+              </div>
+            </div>
+            <div class="border-t border-slate-700 my-4"></div>
+            <div class="flex justify-between items-center font-bold text-lg">
+              <p>Total de Impuestos</p>
+              <p>{{ total }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="bg-[var(--card-background-color)] p-6 rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">Acciones Rápidas</h2>
+          <div class="flex flex-col gap-4">
+            <button class="w-full flex items-center justify-center gap-2 rounded-md h-12 px-4 bg-[var(--primary-color)] text-white text-base font-bold hover:bg-blue-600 transition-colors">
+              <span>Presentar Declaración</span>
+            </button>
+            <button class="w-full flex items-center justify-center gap-2 rounded-md h-12 px-4 bg-slate-700 text-white text-base font-bold hover:bg-slate-600 transition-colors">
+              <span>Realizar Pago</span>
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+
