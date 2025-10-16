@@ -1,0 +1,62 @@
+-- ============================================
+-- QUERIES PARA VER ESTRUCTURA DE LA BD
+-- Ejecutar en H2 Console: http://localhost:8082/h2-console
+-- ============================================
+
+-- 1. Ver todas las tablas
+SELECT TABLE_NAME, TABLE_TYPE 
+FROM INFORMATION_SCHEMA.TABLES 
+WHERE TABLE_SCHEMA = 'PUBLIC'
+ORDER BY TABLE_NAME;
+
+-- 2. Ver todas las columnas de cada tabla
+SELECT TABLE_NAME, COLUMN_NAME, TYPE_NAME, IS_NULLABLE, COLUMN_DEFAULT
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_SCHEMA = 'PUBLIC'
+ORDER BY TABLE_NAME, ORDINAL_POSITION;
+
+-- 3. Ver todas las FOREIGN KEYS (relaciones)
+SELECT 
+    FKTABLE_NAME AS 'Tabla Hijo',
+    FKCOLUMN_NAME AS 'Columna FK',
+    PKTABLE_NAME AS 'Tabla Padre',
+    PKCOLUMN_NAME AS 'Columna PK',
+    FK_NAME AS 'Nombre FK'
+FROM INFORMATION_SCHEMA.CROSS_REFERENCES
+WHERE FKTABLE_SCHEMA = 'PUBLIC'
+ORDER BY FKTABLE_NAME;
+
+-- 4. Ver PRIMARY KEYS
+SELECT 
+    TABLE_NAME AS 'Tabla',
+    COLUMN_NAME AS 'Columna PK'
+FROM INFORMATION_SCHEMA.CONSTRAINTS
+WHERE CONSTRAINT_TYPE = 'PRIMARY KEY'
+  AND TABLE_SCHEMA = 'PUBLIC'
+ORDER BY TABLE_NAME;
+
+-- 5. Ver índices
+SELECT 
+    TABLE_NAME AS 'Tabla',
+    INDEX_NAME AS 'Índice',
+    COLUMN_NAME AS 'Columna',
+    NON_UNIQUE AS 'No Único'
+FROM INFORMATION_SCHEMA.INDEXES
+WHERE TABLE_SCHEMA = 'PUBLIC'
+ORDER BY TABLE_NAME, INDEX_NAME;
+
+-- 6. Script completo de la estructura (DDL)
+SCRIPT NODATA;
+
+-- ============================================
+-- VISTA SIMPLIFICADA DE RELACIONES
+-- ============================================
+
+-- Relaciones en formato legible
+SELECT 
+    CONCAT(FKTABLE_NAME, '.', FKCOLUMN_NAME) AS 'FK',
+    '→' AS 'Relación',
+    CONCAT(PKTABLE_NAME, '.', PKCOLUMN_NAME) AS 'PK'
+FROM INFORMATION_SCHEMA.CROSS_REFERENCES
+WHERE FKTABLE_SCHEMA = 'PUBLIC'
+ORDER BY FKTABLE_NAME;

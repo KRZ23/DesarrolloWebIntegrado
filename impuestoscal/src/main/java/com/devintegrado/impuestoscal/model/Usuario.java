@@ -38,6 +38,12 @@ public class Usuario {
     @Column(nullable = false, length = 10)
     private String rut10; // 10 caracteres, sin DV, simulado
 
+        @Column(nullable = false)
+        private String nombre; // nombre persona o empresa
+
+        @Column(nullable = false, length = 10)
+        private String tipoPersona; // "NATURAL" o "JURIDICA"
+
     @Column(nullable = false)
     private String claveSolHash; // almacenada con BCrypt
 

@@ -31,16 +31,22 @@ public class SeedDataConfig {
 
                 Usuario u1 = Usuario.builder()
                         .rut10("1234567890")
+                        .nombre("Juan Pérez")
+                        .tipoPersona("NATURAL")
                         .claveSolHash(passwordEncoder.encode("sol1234"))
                         .roles(Set.of(nat))
                         .build();
                 Usuario u2 = Usuario.builder()
                         .rut10("5555555555")
+                        .nombre("Empresa ABC S.A.C.")
+                        .tipoPersona("JURIDICA")
                         .claveSolHash(passwordEncoder.encode("sol1234"))
                         .roles(Set.of(jur))
                         .build();
                 Usuario a1 = Usuario.builder()
                         .rut10("0000000000")
+                        .nombre("Administrador")
+                        .tipoPersona("NATURAL")
                         .claveSolHash(passwordEncoder.encode("admin"))
                         .roles(Set.of(admin))
                         .build();
