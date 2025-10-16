@@ -42,7 +42,7 @@ export interface RegistroCreate { tipoImpuesto: string; monto: number; fechaVenc
 export class DashboardService {
   private base = 'http://localhost:8082/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Resumen rápido (usa /api/dashboard)
   getResumen(): Observable<DashboardResumen> {
@@ -71,7 +71,9 @@ export class DashboardService {
     return this.http.delete<void>(`${this.base}/registros/${id}`);
   }
 
-  actualizarRegistro(id: number, payload: RegistroCreate) {
+  // actualizar un registro (PUT)
+  actualizarRegistro(id: number, payload: { tipoImpuesto: string; monto: number; fechaVencimiento: string; estado?: string }) {
     return this.http.put<RegistroResp>(`${this.base}/registros/${id}`, payload);
   }
+
 }

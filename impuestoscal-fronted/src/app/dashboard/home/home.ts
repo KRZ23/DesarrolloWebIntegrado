@@ -140,4 +140,75 @@ export class Home implements OnInit {
       error: (err) => { console.error(err); alert('Error al eliminar'); }
     });
   }
+
+  // --- EDICIÓN: propiedades ---
+editId: number | null = null;
+editModel: { tipoImpuesto: string; monto: number; fechaVencimiento: string; estado?: string } = {
+  tipoImpuesto: '',
+  monto: 0,
+  fechaVencimiento: ''
+};
+editLoading = false;
+
+// --- EDICIÓN: abrir el editor con los datos del registro ---
+abrirEditar(r: RegistroResp): void {
+  this.editId = r.id;
+  const montoNum = typeof r.monto === 'string' ? Number(r.monto) : r.monto;
+  this.editModel = {
+    tipoImpuesto: r.tipoImpuesto,
+    monto: montoNum,
+    fechaVencimiento: r.fechaVencimiento, // debe ser 'YYYY-MM-DD'
+    estado: r.estado
+  };
+  // opcional: desplazar la vista al modal si existe
+  setTimeout(() => {
+    const el = document.getElementById('modal-editar');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 0);
+}
+
+// --- EDICIÓN: cancelar ---
+cancelarEditar(): void {
+  this.editId = null;
+  this.editModel = { tipoImpuesto: '', monto: 0, fechaVencimiento: '' };
+  this.editLoading = false;
+}
+
+// --- EDICIÓN: guardar cambios (PUT) ---
+guardarEdicion(): void {
+  if (!this.editId) return;
+  if (!this.editModel.tipoImpuesto || !this.editModel.fechaVencimiento || !this.editModel.monto) {
+    alert('Completa tipo, monto y fecha.');
+    return;
+  }
+  if (this.editModel.monto <= 0) {
+    alert('El monto debe ser mayor que 0.');
+    return;
+  }
+
+  this.editLoading = true;
+  const payload = {
+    tipoImpuesto: this.editModel.tipoImpuesto,
+    monto: this.editModel.monto,
+    fechaVencimiento: this.editModel.fechaVencimiento,
+    estado: this.editModel.estado
+  };
+
+  this.dashboardService.actualizarRegistro(this.editId, payload).subscribe({
+    next: () => {
+      this.editLoading = false;
+      this.editId = null;
+      // refrescar datos
+      this.cargarResumen();
+      this.cargarRegistros();
+      this.cargarProximos(7);
+    },
+    error: (err) => {
+      console.error('Error actualizando registro', err);
+      alert(err?.error?.message || 'Error al actualizar');
+      this.editLoading = false;
+    }
+  });
+}
+
 }

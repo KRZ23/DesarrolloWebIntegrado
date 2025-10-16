@@ -122,7 +122,7 @@
                   <td class="p-2">{{ r.fechaVencimiento }}</td>
                   <td class="p-2">{{ r.estado }}</td>
                   <td class="p-2">
-                    <button class="px-2 py-1 mr-2 bg-yellow-500 text-white rounded" title="Editar" disabled>Editar</button>
+                    <button class="px-2 py-1 mr-2 bg-yellow-500 text-white rounded" title="Editar" (click)="abrirEditar(r)">Editar</button>
                     <button class="px-2 py-1 bg-red-600 text-white rounded" (click)="eliminar(r.id)">Eliminar</button>
                   </td>
                 </tr>
@@ -133,6 +133,103 @@
             </table>
           </div>
         </section>
+        <!-- MODAL EDITAR REGISTRO -->
+<!-- MODAL EDITAR REGISTRO -->
+<div
+  id="modal-editar"
+  *ngIf="editId !== null"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-xl shadow-lg w-96 p-6 relative">
+    <h3 class="text-xl font-semibold mb-4 text-gray-800">Editar registro</h3>
+
+    <form (ngSubmit)="guardarEdicion()" class="space-y-4">
+      <!-- Tipo de impuesto -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Tipo de impuesto</label>
+        <input
+          type="text"
+          [(ngModel)]="editModel.tipoImpuesto"
+          name="tipoImpuesto"
+          class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-300 text-black"
+          required
+        />
+      </div>
+
+      <!-- Monto -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Monto</label>
+        <input
+          type="number"
+          [(ngModel)]="editModel.monto"
+          name="monto"
+          min="0"
+          step="0.01"
+          class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-300 text-black"
+          required
+        />
+      </div>
+
+      <!-- Fecha de vencimiento -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Fecha de vencimiento</label>
+        <input
+          type="date"
+          [(ngModel)]="editModel.fechaVencimiento"
+          name="fechaVencimiento"
+          class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-300 text-black"
+          required
+        />
+      </div>
+
+      <!-- Estado -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Estado</label>
+        <select
+          [(ngModel)]="editModel.estado"
+          name="estado"
+          class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-300 text-black"
+        >
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="PAGADO">Pagado</option>
+          <option value="VENCIDO">Vencido</option>
+        </select>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex justify-end gap-2 mt-6">
+        <button
+          type="button"
+          class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+          (click)="cancelarEditar()"
+          [disabled]="editLoading"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          [disabled]="editLoading"
+        >
+          <span *ngIf="!editLoading">Guardar</span>
+          <span *ngIf="editLoading">Guardando...</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Botón de cerrar (X) -->
+    <button
+      (click)="cancelarEditar()"
+      class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg"
+      title="Cerrar"
+    >
+      ✕
+    </button>
+  </div>
+</div>
+
+
       </div>
 
       <!-- Sección derecha -->
