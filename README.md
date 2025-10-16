@@ -7,6 +7,10 @@ Backend en Spring Boot que simula autenticación por RUT10/clave SOL y gestión 
 ```bash
 cd impuestoscal
 ./mvnw spring-boot:run
+y
+cd impuestoscal-fronted
+npm run start
+si 
 ```
 
 - DB: H2 en memoria
