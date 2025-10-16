@@ -1,0 +1,149 @@
+<div class="flex min-h-screen bg-slate-800 text-white">
+  <aside class="w-64 bg-slate-900 p-6 flex flex-col justify-between">
+    <div>
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold">No se </h1>
+        <p class="text-[var(--text-secondary)] text-sm">Bienvenido</p>
+      </div>
+      <nav class="flex flex-col gap-2">
+        <a routerLink="/inicio" class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+          <span>Inicio</span>
+        </a>
+        <a routerLink="/operaciones-igv" class="flex items-center gap-3 px-4 py-2 rounded-md bg-[var(--primary-color)] text-white font-medium">
+          <span>Operaciones de IGV</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-500 cursor-not-allowed">
+          <span>Trabajadores</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-500 cursor-not-allowed">
+          <span>Notificaciones</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-500 cursor-not-allowed">
+          <span>Perfil</span>
+        </a>
+      </nav>
+    </div>
+    <div>
+      <a routerLink="/ayuda" class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors text-[var(--text-secondary)]">
+        <span>Ayuda</span>
+      </a>
+    </div>
+  </aside>
+
+  <div class="p-6 flex-1">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold">Operaciones IGV</h2>
+        <div class="flex gap-2">
+          <button class="px-3 py-2 bg-green-600 text-white rounded" (click)="abrirCrear()">Nuevo</button>
+        </div>
+      </div>
+
+      <div class="mb-4 grid grid-cols-3 gap-2">
+        <input type="date" [(ngModel)]="filtroInicio" class="p-2 rounded bg-slate-800 text-white"/>
+        <input type="date" [(ngModel)]="filtroFin" class="p-2 rounded bg-slate-800 text-white"/>
+        <button class="px-3 py-2 bg-blue-600 text-white rounded" (click)="buscarPeriodo()">Filtrar</button>
+      </div>
+
+      <div class="overflow-x-auto bg-[var(--card-background-color)] rounded p-2">
+        <table class="w-full table-auto">
+          <thead>
+            <tr class="text-left">
+              <th class="p-2">ID</th>
+              <th class="p-2">Tipo</th>
+              <th class="p-2">Documento</th>
+              <th class="p-2">Fecha</th>
+              <th class="p-2">Base</th>
+              <th class="p-2">IGV</th>
+              <th class="p-2">Total</th>
+              <th class="p-2">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let o of operaciones">
+              <td class="p-2">{{ o.id }}</td>
+              <td class="p-2">{{ o.tipo }}</td>
+              <td class="p-2">{{ o.numeroDocumento }}</td>
+              <td class="p-2">{{ o.fechaOperacion | date:'dd/MM/yyyy' }}</td>
+              <td class="p-2">{{ o.baseImponible | number:'1.2-2' }}</td>
+              <td class="p-2">{{ o.igv | number:'1.2-2' }}</td>
+              <td class="p-2">{{ o.montoTotal | number:'1.2-2' }}</td>
+              <td class="p-2">
+                <button class="px-2 py-1 mr-2 bg-yellow-500 text-white rounded" (click)="abrirEditar(o)">Editar</button>
+                <button class="px-2 py-1 bg-red-600 text-white rounded" (click)="eliminar(o.id)">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-6">
+        <h3 class="font-semibold mb-2">Resumen Mensual</h3>
+        <div class="flex gap-2 items-center">
+          <input type="number" placeholder="Mes" #m class="p-2 rounded bg-slate-800 text-white"/>
+          <input type="number" placeholder="Año" #a class="p-2 rounded bg-slate-800 text-white"/>
+          <button class="px-3 py-2 bg-indigo-600 text-white rounded" (click)="calcularResumen(+m.value, +a.value)">Calcular</button>
+        </div>
+
+        <div *ngIf="resumen" class="mt-3 bg-white p-4 rounded text-black">
+          <p>Ventas totales: {{ resumen.totalVentas | number:'1.2-2' }}</p>
+          <p>IGV ventas: {{ resumen.igvVentas | number:'1.2-2' }}</p>
+          <p>Compras totales: {{ resumen.totalCompras | number:'1.2-2' }}</p>
+          <p>IGV compras: {{ resumen.igvCompras | number:'1.2-2' }}</p>
+          <p class="font-bold">IGV a pagar: {{ resumen.igvAPagar | number:'1.2-2' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="editing" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white p-6 rounded w-96 text-black">
+        <h3 class="text-lg font-semibold mb-3">{{ editId ? 'Editar operación' : 'Nueva operación' }}</h3>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm">Tipo</label>
+            <select [(ngModel)]="model.tipo" class="w-full p-2 rounded bg-slate-100 text-black">
+              <option value="VENTA">VENTA</option>
+              <option value="COMPRA">COMPRA</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm">Número documento</label>
+            <input [(ngModel)]="model.numeroDocumento" class="w-full p-2 rounded bg-slate-100 text-black"/>
+          </div>
+
+          <div>
+            <label class="block text-sm">Fecha operación</label>
+            <input type="date" [(ngModel)]="model.fechaOperacion" class="w-full p-2 rounded bg-slate-100 text-black"/>
+          </div>
+
+          <div>
+            <label class="block text-sm">Razón social tercero</label>
+            <input [(ngModel)]="model.razonSocialTercero" class="w-full p-2 rounded bg-slate-100 text-black"/>
+          </div>
+
+          <div>
+            <label class="block text-sm">RUC tercero</label>
+            <input [(ngModel)]="model.rucTercero" class="w-full p-2 rounded bg-slate-100 text-black"/>
+          </div>
+
+          <div>
+            <label class="block text-sm">Base imponible</label>
+            <input type="number" step="0.01" [(ngModel)]="model.baseImponible" class="w-full p-2 rounded bg-slate-100 text-black"/>
+          </div>
+
+          <div>
+            <label class="block text-sm">Descripción</label>
+            <textarea [(ngModel)]="model.descripcion" class="w-full p-2 rounded bg-slate-100 text-black"></textarea>
+          </div>
+
+          <div class="flex justify-end gap-2 mt-4">
+            <button class="px-3 py-2 bg-gray-400 rounded text-black" (click)="cancelar()">Cancelar</button>
+            <button class="px-3 py-2 bg-blue-600 rounded text-white" (click)="guardar()">{{ saving ? 'Guardando...' : (editId ? 'Actualizar' : 'Crear') }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
