@@ -1,9 +1,18 @@
 package com.devintegrado.impuestoscal.controller;
 
 import com.devintegrado.impuestoscal.dto.AuthDtos;
+import com.devintegrado.impuestoscal.model.Usuario;
+import com.devintegrado.impuestoscal.repository.UsuarioRepository;
 import com.devintegrado.impuestoscal.service.AuthService;
 import jakarta.validation.Valid;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "http://localhost:4200")
@@ -21,6 +30,9 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 }
+
+
+
 
 
 
