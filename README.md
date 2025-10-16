@@ -2,6 +2,12 @@
 
 Backend en Spring Boot que simula autenticación por RUT10/clave SOL y gestión de registros tributarios (GET/POST/PUT/DELETE) con roles y JWT.
 
+## 📊 Documentación Adicional
+
+- 📈 [Nuevas Funcionalidades](./impuestoscal/docs/NUEVAS_FUNCIONALIDADES.md) - Entidades, servicios y refactorización
+- 🎨 [Diagrama ER](./impuestoscal/docs/DIAGRAMA_ER.md) - Guía para generar diagramas de la base de datos
+- 📝 [Queries SQL](./impuestoscal/docs/queries-estructura-bd.sql) - Queries para explorar la estructura de la BD
+
 ## Arranque rápido
 
 ```bash

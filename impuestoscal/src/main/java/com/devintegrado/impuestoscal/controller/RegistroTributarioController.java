@@ -19,57 +19,62 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/registros")
-public class RegistroTributarioController {
+public class RegistroTributarioController extends BaseController {
     private final RegistroTributarioRepository registroRepository;
-    private final UsuarioRepository usuarioRepository;
 
     public RegistroTributarioController(RegistroTributarioRepository registroRepository, UsuarioRepository usuarioRepository) {
+        super(usuarioRepository);
         this.registroRepository = registroRepository;
-        this.usuarioRepository = usuarioRepository;
     }
 
     @GetMapping
     public List<RegistroTributarioDtos.Response> listar(Authentication auth) {
-        Usuario u = usuarioRepository.findByRut10(auth.getName()).orElseThrow();
-        return registroRepository.findByTitular(u).stream().map(this::toDto).collect(Collectors.toList());
+        Usuario u = getCurrentUser(auth);
+        return registroRepository.findByTitular(u).stream()
+                .filter(r -> r.getActivo())
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
-
+    
     @PostMapping
     public ResponseEntity<RegistroTributarioDtos.Response> crear(Authentication auth,
                                                                  @Valid @RequestBody RegistroTributarioDtos.CreateOrUpdateRequest body) {
-        Usuario u = usuarioRepository.findByRut10(auth.getName()).orElseThrow();
+        Usuario u = getCurrentUser(auth);
         RegistroTributario reg = RegistroTributario.builder()
                 .tipoImpuesto(body.getTipoImpuesto())
                 .monto(body.getMonto())
                 .fechaVencimiento(body.getFechaVencimiento())
                 .estado(body.getEstado() != null ? body.getEstado() : EstadoRegistro.PENDIENTE)
+                .activo(true)
                 .titular(u)
                 .build();
         reg = registroRepository.save(reg);
         return ResponseEntity.created(URI.create("/api/registros/" + reg.getId())).body(toDto(reg));
     }
-
+    
     @GetMapping("/pendientes")
     public List<RegistroTributarioDtos.Response> pendientes(Authentication auth) {
-        Usuario u = usuarioRepository.findByRut10(auth.getName()).orElseThrow();
+        Usuario u = getCurrentUser(auth);
         return registroRepository.findByTitularAndEstado(u, EstadoRegistro.PENDIENTE)
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
-
+    
     @GetMapping("/vencidos")
     public List<RegistroTributarioDtos.Response> vencidos(Authentication auth) {
-        Usuario u = usuarioRepository.findByRut10(auth.getName()).orElseThrow();
+        Usuario u = getCurrentUser(auth);
         return registroRepository.findByTitularAndFechaVencimientoBeforeAndEstado(u, LocalDate.now(), EstadoRegistro.PENDIENTE)
                 .stream().map(this::toDto).collect(Collectors.toList());
     }
-
+    
     @PutMapping("/{id}")
     public RegistroTributarioDtos.Response actualizar(Authentication auth, @PathVariable Long id,
                                                       @Valid @RequestBody RegistroTributarioDtos.CreateOrUpdateRequest body) {
-        Usuario u = usuarioRepository.findByRut10(auth.getName()).orElseThrow();
+        Usuario u = getCurrentUser(auth);
         RegistroTributario reg = registroRepository.findById(id).orElseThrow();
-        if (!reg.getTitular().getId().equals(u.getId())) {
-            throw new IllegalArgumentException("No autorizado para modificar este registro");
+        validateOwnership(u, reg.getTitular().getId());
+        
+        if (!reg.getActivo()) {
+            throw new IllegalArgumentException("No se puede modificar un registro inactivo");
         }
         reg.setTipoImpuesto(body.getTipoImpuesto());
         reg.setMonto(body.getMonto());
@@ -77,19 +82,31 @@ public class RegistroTributarioController {
         if (body.getEstado() != null) reg.setEstado(body.getEstado());
         return toDto(registroRepository.save(reg));
     }
-
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(Authentication auth, @PathVariable Long id) {
-        Usuario u = usuarioRepository.findByRut10(auth.getName()).orElseThrow();
+        Usuario u = getCurrentUser(auth);
         RegistroTributario reg = registroRepository.findById(id).orElseThrow();
-        if (!reg.getTitular().getId().equals(u.getId())) {
-            return ResponseEntity.status(403).build();
-        }
-        registroRepository.deleteById(id);
+        validateOwnership(u, reg.getTitular().getId());
+        
+        // Eliminación lógica: cambiar estado a inactivo
+        reg.setActivo(false);
+        registroRepository.save(reg);
         return ResponseEntity.noContent().build();
     }
-
-    @PreAuthorize("hasRole('ADMIN')")
+    
+    @GetMapping("/proximos-vencimientos")
+    public List<RegistroTributarioDtos.Response> proximosVencimientos(
+            Authentication auth,
+            @RequestParam(defaultValue = "7") int dias) {
+        Usuario u = getCurrentUser(auth);
+        LocalDate fechaLimite = LocalDate.now().plusDays(dias);
+        return registroRepository.findByTitularAndFechaVencimientoBeforeAndEstado(u, fechaLimite, EstadoRegistro.PENDIENTE)
+                .stream()
+                .filter(r -> r.getFechaVencimiento().isAfter(LocalDate.now()) || r.getFechaVencimiento().isEqual(LocalDate.now()))
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/todos")
     public List<RegistroTributarioDtos.Response> listarTodosAdmin() {
         return registroRepository.findAll().stream().map(this::toDto).collect(Collectors.toList());

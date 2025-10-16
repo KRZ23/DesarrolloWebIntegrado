@@ -6,8 +6,6 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,40 +21,48 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "registros_tributarios")
+@Table(name = "recibos_honorarios")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RegistroTributario {
+public class ReciboHonorario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 80)
-    private String tipoImpuesto; // p.ej. IGV, Renta, etc. simulado
-
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal monto;
+    @Column(nullable = false, unique = true, length = 20)
+    private String numeroRecibo;
 
     @Column(nullable = false)
-    private LocalDate fechaVencimiento;
+    private LocalDate fechaEmision;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private EstadoRegistro estado;
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal montoTotal; // Monto bruto
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal retencion; // 8% de retención
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal montoNeto; // Monto a cobrar (montoTotal - retencion)
+
+    @Column(length = 500)
+    private String descripcionServicio;
+
+    @Column(length = 200)
+    private String clienteRazonSocial;
+
+    @Column(length = 11)
+    private String clienteRuc;
 
     @Column(nullable = false)
     @Builder.Default
     private Boolean activo = true;
 
-    @Column(length = 500)
-    private String observaciones;
-
     @ManyToOne(optional = false)
     @JoinColumn(name = "usuario_id")
-    private Usuario titular;
+    private Usuario emisor;
 
     // Auditoría
     @Column(nullable = false, updatable = false)
@@ -72,6 +78,11 @@ public class RegistroTributario {
         if (activo == null) {
             activo = true;
         }
+        // Calcular automáticamente la retención del 8%
+        if (montoTotal != null && retencion == null) {
+            retencion = montoTotal.multiply(new BigDecimal("0.08"));
+            montoNeto = montoTotal.subtract(retencion);
+        }
     }
 
     @PreUpdate
@@ -79,6 +90,3 @@ public class RegistroTributario {
         fechaActualizacion = LocalDateTime.now();
     }
 }
-
-
-

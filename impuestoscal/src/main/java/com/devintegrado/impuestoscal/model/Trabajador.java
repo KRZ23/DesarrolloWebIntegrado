@@ -23,40 +23,71 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "registros_tributarios")
+@Table(name = "trabajadores")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RegistroTributario {
+public class Trabajador {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 80)
-    private String tipoImpuesto; // p.ej. IGV, Renta, etc. simulado
+    @Column(nullable = false, length = 8)
+    private String dni;
 
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal monto;
+    @Column(nullable = false, length = 100)
+    private String nombres;
+
+    @Column(nullable = false, length = 100)
+    private String apellidoPaterno;
+
+    @Column(nullable = false, length = 100)
+    private String apellidoMaterno;
+
+    @Column(length = 100)
+    private String email;
+
+    @Column(length = 20)
+    private String telefono;
+
+    @Column(length = 200)
+    private String direccion;
 
     @Column(nullable = false)
-    private LocalDate fechaVencimiento;
+    private LocalDate fechaIngreso;
+
+    @Column
+    private LocalDate fechaCese;
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal sueldoBruto; // Sueldo mensual
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private EstadoRegistro estado;
+    @Column(nullable = false, length = 10)
+    private TipoRegimenPensionario regimenPensionario;
+
+    @Column(length = 50)
+    private String afpNombre; // Solo si es AFP
+
+    // Cálculos automáticos (se pueden calcular en el servicio)
+    @Column(precision = 15, scale = 2)
+    private BigDecimal aportePensionario; // 13% ONP o 10-13% AFP
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal retencionQuintaCategoria; // Impuesto a la renta 5ta
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal sueldoNeto; // Sueldo después de descuentos
 
     @Column(nullable = false)
     @Builder.Default
     private Boolean activo = true;
 
-    @Column(length = 500)
-    private String observaciones;
-
     @ManyToOne(optional = false)
-    @JoinColumn(name = "usuario_id")
-    private Usuario titular;
+    @JoinColumn(name = "empresa_id")
+    private Usuario empresa;
 
     // Auditoría
     @Column(nullable = false, updatable = false)
@@ -78,7 +109,9 @@ public class RegistroTributario {
     protected void onUpdate() {
         fechaActualizacion = LocalDateTime.now();
     }
+
+    // Método auxiliar para obtener nombre completo
+    public String getNombreCompleto() {
+        return String.format("%s %s %s", nombres, apellidoPaterno, apellidoMaterno);
+    }
 }
-
-
-

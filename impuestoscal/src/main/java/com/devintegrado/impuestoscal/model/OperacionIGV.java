@@ -23,40 +23,52 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "registros_tributarios")
+@Table(name = "operaciones_igv")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RegistroTributario {
+public class OperacionIGV {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 80)
-    private String tipoImpuesto; // p.ej. IGV, Renta, etc. simulado
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private TipoOperacionIGV tipo; // COMPRA o VENTA
 
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal monto;
+    @Column(nullable = false, length = 20)
+    private String numeroDocumento; // Factura, boleta, etc.
 
     @Column(nullable = false)
-    private LocalDate fechaVencimiento;
+    private LocalDate fechaOperacion;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private EstadoRegistro estado;
+    @Column(nullable = false, length = 200)
+    private String razonSocialTercero;
+
+    @Column(length = 11)
+    private String rucTercero;
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal baseImponible; // Monto sin IGV
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal igv; // 18% del monto
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal montoTotal; // baseImponible + igv
+
+    @Column(length = 500)
+    private String descripcion;
 
     @Column(nullable = false)
     @Builder.Default
     private Boolean activo = true;
 
-    @Column(length = 500)
-    private String observaciones;
-
     @ManyToOne(optional = false)
     @JoinColumn(name = "usuario_id")
-    private Usuario titular;
+    private Usuario empresa;
 
     // Auditoría
     @Column(nullable = false, updatable = false)
@@ -72,6 +84,11 @@ public class RegistroTributario {
         if (activo == null) {
             activo = true;
         }
+        // Calcular automáticamente el IGV (18%)
+        if (baseImponible != null && igv == null) {
+            igv = baseImponible.multiply(new BigDecimal("0.18"));
+            montoTotal = baseImponible.add(igv);
+        }
     }
 
     @PreUpdate
@@ -79,6 +96,3 @@ public class RegistroTributario {
         fechaActualizacion = LocalDateTime.now();
     }
 }
-
-
-
