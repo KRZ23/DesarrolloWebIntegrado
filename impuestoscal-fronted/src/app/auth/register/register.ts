@@ -46,7 +46,7 @@ export class RegisterComponent {
     }
 
     const payload = {
-      rut10: String(this.rut10).padStart(10, '0').slice(0,10), // asegúrate formato 10 chars si lo necesitas
+      rut10: String(this.rut10).padStart(10, '0').slice(0,10), 
       claveSol: this.password,
       tipoPersona: this.mapTipoCuentaToBackend(this.tipoCuenta),
       nombre: this.nombre
@@ -56,7 +56,7 @@ export class RegisterComponent {
     this.authService.register(payload).subscribe({
       next: (res) => {
         this.loading = false;
-        // si el backend devuelve el usuario o 201, mostramos éxito y vamos a login
+        // éxito y  login
         alert('Registro exitoso. Inicia sesión.');
         this.router.navigate(['/iniciar-sesion']);
       },
