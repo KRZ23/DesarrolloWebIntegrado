@@ -44,12 +44,10 @@ export class DashboardService {
 
   constructor(private http: HttpClient) { }
 
-  // Resumen rápido (usa /api/dashboard)
   getResumen(): Observable<DashboardResumen> {
     return this.http.get<DashboardResumen>(`${this.base}/dashboard`);
   }
 
-  // Registros tributarios
   listarRegistros(): Observable<RegistroResp[]> {
     return this.http.get<RegistroResp[]>(`${this.base}/registros`);
   }
