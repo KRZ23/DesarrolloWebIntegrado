@@ -1,15 +1,16 @@
 // src/app/operaciones/operaciones-igv.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormsModule } from '@angular/forms';
 import { OperacionIGVService } from './operacion-igv.service';
 import { OperacionIGVResp, OperacionIGVCreate, OperacionIGVUpdate, TipoOperacionIGV } from './operacion-igv.models';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-operacion-igv',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule],
   templateUrl: './operacion-igv.html',
   styleUrls: ['./operacion-igv.css']
 })
@@ -21,15 +22,7 @@ export class OperacionIGVComponent implements OnInit {
   // estados modal crear/editar
   editing = false;
   editId: number | null = null;
-  model: Partial<OperacionIGVCreate & OperacionIGVUpdate> = {
-    tipo: 'VENTA',
-    numeroDocumento: '',
-    fechaOperacion: '',
-    razonSocialTercero: '',
-    rucTercero: '',
-    baseImponible: 0,
-    descripcion: ''
-  };
+  form!: FormGroup;
   saving = false;
 
   // filtros periodo
@@ -39,7 +32,17 @@ export class OperacionIGVComponent implements OnInit {
   // resumen mensual
   resumen: any = null;
 
-  constructor(private svc: OperacionIGVService) {}
+  constructor(private svc: OperacionIGVService, private fb: FormBuilder, private auth: AuthService, private router: Router) {
+    this.form = this.fb.group({
+      tipo: ['VENTA', Validators.required],
+      numeroDocumento: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9\-]{3,30}$/)]],
+      fechaOperacion: ['', Validators.required],
+      razonSocialTercero: ['', [Validators.maxLength(120)]],
+      rucTercero: ['', [Validators.pattern(/^\d{11}$/)]],
+      baseImponible: [0, [Validators.required, Validators.min(0.01)]],
+      descripcion: ['', [Validators.maxLength(250)]]
+    });
+  }
 
   ngOnInit(): void {
     this.loadAll();
@@ -57,13 +60,21 @@ export class OperacionIGVComponent implements OnInit {
   abrirCrear(): void {
     this.editing = true;
     this.editId = null;
-    this.model = { tipo: 'VENTA', numeroDocumento: '', fechaOperacion: '', razonSocialTercero: '', baseImponible: 0, descripcion: '' };
+    this.form.reset({
+      tipo: 'VENTA',
+      numeroDocumento: '',
+      fechaOperacion: '',
+      razonSocialTercero: '',
+      rucTercero: '',
+      baseImponible: 0,
+      descripcion: ''
+    });
   }
 
   abrirEditar(op: OperacionIGVResp): void {
     this.editing = true;
     this.editId = op.id;
-    this.model = {
+    this.form.patchValue({
       tipo: op.tipo,
       numeroDocumento: op.numeroDocumento,
       fechaOperacion: op.fechaOperacion,
@@ -71,31 +82,37 @@ export class OperacionIGVComponent implements OnInit {
       rucTercero: op.rucTercero,
       baseImponible: op.baseImponible,
       descripcion: op.descripcion
-    };
+    });
   }
 
   cancelar(): void {
     this.editing = false;
     this.editId = null;
     this.saving = false;
+    this.form.reset({
+      tipo: 'VENTA',
+      numeroDocumento: '',
+      fechaOperacion: '',
+      razonSocialTercero: '',
+      rucTercero: '',
+      baseImponible: 0,
+      descripcion: ''
+    });
   }
 
   guardar(): void {
-    // validaciones simples
-    if (!this.model.tipo || !this.model.numeroDocumento || !this.model.fechaOperacion || !this.model.baseImponible) {
-      alert('Completa tipo, número, fecha y base imponible');
-      return;
-    }
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.saving = true;
+    const value = this.form.value;
     if (this.editId) {
       const payload: OperacionIGVUpdate = {
-        tipo: this.model.tipo as TipoOperacionIGV,
-        numeroDocumento: this.model.numeroDocumento,
-        fechaOperacion: this.model.fechaOperacion,
-        razonSocialTercero: this.model.razonSocialTercero,
-        rucTercero: this.model.rucTercero,
-        baseImponible: this.model.baseImponible,
-        descripcion: this.model.descripcion
+        tipo: value.tipo as TipoOperacionIGV,
+        numeroDocumento: value.numeroDocumento,
+        fechaOperacion: value.fechaOperacion,
+        razonSocialTercero: value.razonSocialTercero,
+        rucTercero: value.rucTercero,
+        baseImponible: value.baseImponible,
+        descripcion: value.descripcion
       };
       this.svc.actualizar(this.editId, payload).subscribe({
         next: () => { this.saving = false; this.cancelar(); this.loadAll(); },
@@ -103,13 +120,13 @@ export class OperacionIGVComponent implements OnInit {
       });
     } else {
       const payload: OperacionIGVCreate = {
-        tipo: this.model.tipo as TipoOperacionIGV,
-        numeroDocumento: this.model.numeroDocumento!,
-        fechaOperacion: this.model.fechaOperacion!,
-        razonSocialTercero: this.model.razonSocialTercero!,
-        rucTercero: this.model.rucTercero,
-        baseImponible: this.model.baseImponible!,
-        descripcion: this.model.descripcion
+        tipo: value.tipo as TipoOperacionIGV,
+        numeroDocumento: value.numeroDocumento,
+        fechaOperacion: value.fechaOperacion,
+        razonSocialTercero: value.razonSocialTercero,
+        rucTercero: value.rucTercero,
+        baseImponible: value.baseImponible,
+        descripcion: value.descripcion
       };
       this.svc.crear(payload).subscribe({
         next: () => { this.saving = false; this.cancelar(); this.loadAll(); },
@@ -139,6 +156,11 @@ export class OperacionIGVComponent implements OnInit {
       next: r => this.resumen = r,
       error: e => { console.error(e); alert('Error calculando resumen'); }
     });
+  }
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigate(['/iniciar-sesion']);
   }
 }
 

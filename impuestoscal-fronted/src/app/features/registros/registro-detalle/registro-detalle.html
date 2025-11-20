@@ -1,0 +1,13 @@
+<section *ngIf="registro" class="registro-detalle">
+  <h2>Detalle Registro #{{ registro.id }}</h2>
+  <ul>
+    <li><strong>Tipo:</strong> {{ registro.tipoImpuesto }}</li>
+    <li><strong>Monto:</strong> {{ registro.monto | number:'1.2-2' }}</li>
+    <li><strong>Fecha Vencimiento:</strong> {{ registro.fechaVencimiento }}</li>
+    <li><strong>Estado:</strong> {{ registro.estado }}</li>
+  </ul>
+  <button (click)="volver()">Volver</button>
+  <button (click)="editar()">Editar</button>
+</section>
+<p *ngIf="!registro && !loading">No encontrado.</p>
+<p *ngIf="loading">Cargando...</p>

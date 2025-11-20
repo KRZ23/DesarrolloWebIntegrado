@@ -10,7 +10,7 @@
                     <h1 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">Crea tu Cuenta</h1>
                     <p class="mt-4 text-slate-400">Comienza a gestionar tus tributos de forma sencilla.</p>
                 </div>
-                <form class="mt-8 space-y-6" (ngSubmit)="onSubmit()">
+                <form class="mt-8 space-y-6" [formGroup]="form" (ngSubmit)="onSubmit()">
                     <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-slate-300" for="full-name">Nombre
@@ -18,16 +18,17 @@
                             <div class="mt-1">
                                 <input autocomplete="name"
                                     class="form-input block w-full rounded-md border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:border-[#1173d4] focus:ring-[#1173d4] sm:text-sm"
-                                    id="full-name" name="nombre" placeholder="Ingresa tu nombre completo"
-                                    required type="text" [(ngModel)]="nombre" />
+                                    id="full-name" formControlName="nombre" placeholder="Ingresa tu nombre completo" type="text" />
+                                <small class="text-red-400" *ngIf="form.get('nombre')?.invalid && form.get('nombre')?.touched">Nombre requerido (min 2).</small>
                             </div>
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-slate-300" for="ruc">RUC</label>
                             <div class="mt-1">
-                                <input autocomplete=""
+                                <input autocomplete="off"
                                     class="form-input block w-full rounded-md border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:border-[#1173d4] focus:ring-[#1173d4] sm:text-sm"
-                                    id="ruc" name="rut10" placeholder="0000000000" required type="text" [(ngModel)]="rut10" />
+                                    id="ruc" formControlName="rut10" placeholder="0000000000" type="text" />
+                                <small class="text-red-400" *ngIf="form.get('rut10')?.invalid && form.get('rut10')?.touched">RUC 10 dígitos numéricos.</small>
                             </div>
                         </div>
                         <div class="sm:col-span-2">
@@ -36,7 +37,8 @@
                             <div class="mt-1">
                                 <input autocomplete="email"
                                     class="form-input block w-full rounded-md border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:border-[#1173d4] focus:ring-[#1173d4] sm:text-sm"
-                                    id="email" name="email" placeholder="tu@ejemplo.com" type="email" [(ngModel)]="email" />
+                                    id="email" formControlName="email" placeholder="tu@ejemplo.com" type="email" />
+                                <small class="text-red-400" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">Correo inválido.</small>
                             </div>
                         </div>
                         <div class="sm:col-span-2">
@@ -45,7 +47,7 @@
                             <div class="mt-1">
                                 <input autocomplete="tel"
                                     class="form-input block w-full rounded-md border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:border-[#1173d4] focus:ring-[#1173d4] sm:text-sm"
-                                    id="phone-number" name="telefono" placeholder="Ingresa tu número de teléfono" type="tel" [(ngModel)]="telefono" />
+                                    id="phone-number" formControlName="telefono" placeholder="Ingresa tu número de teléfono" type="tel" />
                             </div>
                         </div>
                         <div class="sm:col-span-2">
@@ -54,7 +56,7 @@
                             <div class="mt-1">
                                 <select
                                     class="form-select block w-full rounded-md border-slate-700 bg-slate-800 text-white focus:border-[#1173d4] focus:ring-[#1173d4] sm:text-sm"
-                                    id="account-type" name="tipoCuenta" [(ngModel)]="tipoCuenta">
+                                    id="account-type" formControlName="tipoCuenta">
                                     <option value="">Selecciona un tipo</option>
                                     <option value="NATURAL">Persona Natural</option>
                                     <option value="JURIDICA">Persona Jurídica</option>
@@ -66,7 +68,8 @@
                             <div class="mt-1">
                                 <input autocomplete="new-password"
                                     class="form-input block w-full rounded-md border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:border-[#1173d4] focus:ring-[#1173d4] sm:text-sm"
-                                    id="password" name="password" placeholder="Crea una contraseña" required type="password" [(ngModel)]="password" />
+                                    id="password" formControlName="password" placeholder="Crea una contraseña" type="password" />
+                                <small class="text-red-400" *ngIf="form.get('password')?.invalid && form.get('password')?.touched">Mínimo 6 caracteres.</small>
                             </div>
                         </div>
                         <div>
@@ -75,7 +78,8 @@
                             <div class="mt-1">
                                 <input autocomplete="new-password"
                                     class="form-input block w-full rounded-md border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:border-[#1173d4] focus:ring-[#1173d4] sm:text-sm"
-                                    id="confirm-password" name="confirmPassword" placeholder="Confirma tu contraseña" required type="password" [(ngModel)]="confirmPassword" />
+                                    id="confirm-password" formControlName="confirmPassword" placeholder="Confirma tu contraseña" type="password" />
+                                <small class="text-red-400" *ngIf="form.get('confirmPassword')?.invalid && form.get('confirmPassword')?.touched">Confirmación requerida.</small>
                             </div>
                         </div>
                     </div>
@@ -83,7 +87,7 @@
                         <div class="flex h-5 items-center">
                             <input
                                 class="h-4 w-4 rounded border-slate-600 bg-slate-800 text-[#1173d4] focus:ring-[#1173d4]"
-                                id="terms" name="terms" type="checkbox" [(ngModel)]="aceptoTerminos" />
+                                id="terms" formControlName="aceptoTerminos" type="checkbox" />
                         </div>
                         <div class="ml-3 text-sm">
                             <label class="font-medium text-slate-300" for="terms">Acepto los <a
@@ -94,13 +98,14 @@
                     </div>
                     <div>
                         <button
-                            class="flex w-full justify-center rounded-md border border-transparent bg-[#1173d4] py-3 px-4 text-base font-bold text-white shadow-sm hover:bg-[#0f63b6] focus:outline-none focus:ring-2 focus:ring-[#1173d4] focus:ring-offset-2 focus:ring-offset-slate-900"
-                            type="button" (click)="onSubmit()" [disabled]="loading">
+                            class="flex w-full justify-center rounded-md border border-transparent bg-[#1173d4] py-3 px-4 text-base font-bold text-white shadow-sm hover:bg-[#0f63b6] focus:outline-none focus:ring-2 focus:ring-[#1173d4] focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50"
+                            type="submit" [disabled]="form.invalid || loading">
                             <span *ngIf="!loading">Registrarse</span>
                             <span *ngIf="loading">Registrando...</span>
                         </button>
                     </div>
                 </form>
+                <p *ngIf="errorMsg" class="text-center text-sm text-red-400">{{ errorMsg }}</p>
                 <p class="mt-6 text-center text-sm text-slate-400">
                     ¿Ya tienes una cuenta?
                     <a class="font-medium text-[#1173d4] hover:underline" routerLink="/iniciar-sesion">Inicia Sesión</a>

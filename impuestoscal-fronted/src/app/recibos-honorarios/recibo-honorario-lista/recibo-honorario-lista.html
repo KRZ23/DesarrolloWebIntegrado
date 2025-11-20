@@ -1,0 +1,79 @@
+<div class="p-6 max-w-6xl mx-auto">
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-2xl font-bold">Recibos por Honorarios</h2>
+    <button (click)="nuevo()" class="px-4 py-2 rounded bg-[var(--primary-color)] text-white font-semibold">Nuevo</button>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-2 mb-4 items-end">
+    <div class="md:col-span-2">
+      <label class="block text-sm mb-1">Fecha inicio</label>
+      <input type="date" [(ngModel)]="filtroInicio" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+    </div>
+    <div class="md:col-span-2">
+      <label class="block text-sm mb-1">Fecha fin</label>
+      <input type="date" [(ngModel)]="filtroFin" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+    </div>
+    <div class="flex gap-2 md:col-span-1">
+      <button (click)="filtrarPeriodo()" class="px-3 py-2 bg-[var(--accent-color)] text-[var(--text-primary)] rounded">Filtrar</button>
+      <button (click)="limpiarFiltro()" class="px-3 py-2 bg-slate-700 text-white rounded">Limpiar</button>
+    </div>
+  </div>
+
+  <div class="mb-6">
+    <div class="flex items-center gap-2 mb-2">
+      <input type="number" [(ngModel)]="anioResumen" class="w-28 p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+      <button (click)="calcularAnuales()" class="px-3 py-2 bg-[var(--primary-color)] text-white rounded">Calcular año</button>
+      <span *ngIf="cargandoResumen" class="text-sm text-[var(--text-secondary)]">Calculando...</span>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" *ngIf="!cargandoResumen">
+      <div class="p-4 rounded bg-[var(--card-background-color)]">
+        <p class="text-sm text-[var(--text-secondary)]">Retención acumulada</p>
+        <p class="text-xl font-semibold">{{ resumenRetencion || 0 | number:'1.2-2' }}</p>
+      </div>
+      <div class="p-4 rounded bg-[var(--card-background-color)]">
+        <p class="text-sm text-[var(--text-secondary)]">Ingresos brutos acumulados</p>
+        <p class="text-xl font-semibold">{{ resumenIngresos || 0 | number:'1.2-2' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto bg-[var(--card-background-color)] rounded p-2">
+    <table class="w-full table-auto">
+      <thead>
+        <tr class="text-left">
+          <th class="p-2">#</th>
+          <th class="p-2">Número</th>
+          <th class="p-2">Fecha</th>
+          <th class="p-2">Cliente</th>
+          <th class="p-2">Bruto</th>
+          <th class="p-2">Retención</th>
+          <th class="p-2">Neto</th>
+          <th class="p-2">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of recibos">
+          <td class="p-2">{{ r.id }}</td>
+          <td class="p-2">{{ r.numeroRecibo }}</td>
+          <td class="p-2">{{ r.fechaEmision }}</td>
+          <td class="p-2">{{ r.clienteRazonSocial }}</td>
+          <td class="p-2">{{ r.montoTotal | number:'1.2-2' }}</td>
+          <td class="p-2">{{ r.retencion | number:'1.2-2' }}</td>
+          <td class="p-2">{{ r.montoNeto | number:'1.2-2' }}</td>
+          <td class="p-2">
+            <button class="px-2 py-1 mr-2 bg-yellow-500 text-white rounded" (click)="editar(r)">Editar</button>
+            <button class="px-2 py-1 bg-red-600 text-white rounded" (click)="eliminar(r)">Eliminar</button>
+          </td>
+        </tr>
+        <tr *ngIf="!loading && recibos.length === 0">
+          <td class="p-4 text-center" colspan="8">No hay recibos</td>
+        </tr>
+        <tr *ngIf="loading">
+          <td class="p-4 text-center" colspan="8">Cargando...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p *ngIf="error" class="mt-4 text-sm text-red-400">{{ error }}</p>
+</div>

@@ -1,0 +1,35 @@
+<div class="flex min-h-screen bg-[var(--background-color)] text-[var(--text-primary)]">
+  <aside class="w-64 bg-slate-900 p-6 flex flex-col justify-between">
+    <div>
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold">Panel</h1>
+        <p class="text-[var(--text-secondary)] text-sm">Bienvenido</p>
+      </div>
+      <nav class="flex flex-col gap-2">
+        <a routerLink="/inicio" class="flex items-center gap-3 px-4 py-2 rounded-md bg-[var(--primary-color)] text-white font-medium">
+          <span>Inicio</span>
+        </a>
+        <a routerLink="/registros" class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+          <span>Registros</span>
+        </a>
+        <a *ngIf="canIGV" routerLink="/operaciones-igv" class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+          <span>Operaciones IGV</span>
+        </a>
+        <a *ngIf="canRecibos" routerLink="/recibos-honorarios" class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+          <span>Recibos Honorarios</span>
+        </a>
+        <a *ngIf="canTrabajadores" routerLink="/trabajadores" class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+          <span>Trabajadores</span>
+        </a>
+      </nav>
+    </div>
+    <div class="flex flex-col gap-2">
+      <button (click)="logout()" routerLink="/iniciar-sesion" class="flex items-center gap-3 px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-500 transition-colors">
+        <span>Cerrar sesión</span>
+      </button>
+    </div>
+  </aside>
+  <div class="flex-1 p-6 overflow-y-auto">
+    <router-outlet></router-outlet>
+  </div>
+</div>

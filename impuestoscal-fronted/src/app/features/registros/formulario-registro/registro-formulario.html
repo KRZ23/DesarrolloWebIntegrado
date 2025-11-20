@@ -1,0 +1,32 @@
+<section class="registro-form">
+  <h2>{{ editMode ? 'Editar' : 'Nuevo' }} Registro</h2>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div>
+      <label>Tipo Impuesto</label>
+      <input formControlName="tipoImpuesto"/>
+      <small *ngIf="form.get('tipoImpuesto')?.touched && form.get('tipoImpuesto')?.errors?.['required']">Requerido</small>
+      <small *ngIf="form.get('tipoImpuesto')?.touched && form.get('tipoImpuesto')?.errors?.['minlength']">Mínimo 2</small>
+      <small *ngIf="form.get('tipoImpuesto')?.touched && form.get('tipoImpuesto')?.errors?.['maxlength']">Máximo 60</small>
+    </div>
+    <div>
+      <label>Monto</label>
+      <input type="number" formControlName="monto"/>
+      <small *ngIf="form.get('monto')?.invalid && form.get('monto')?.touched">Monto > 0</small>
+    </div>
+    <div>
+      <label>Fecha Vencimiento</label>
+      <input type="date" formControlName="fechaVencimiento"/>
+      <small *ngIf="form.get('fechaVencimiento')?.invalid && form.get('fechaVencimiento')?.touched">Fecha requerida</small>
+    </div>
+    <div>
+      <label>Estado</label>
+      <select formControlName="estado">
+        <option value="PENDIENTE">Pendiente</option>
+        <option value="PAGADO">Pagado</option>
+        <option value="VENCIDO">Vencido</option>
+      </select>
+    </div>
+    <button type="submit" [disabled]="form.invalid || loading">{{ loading ? 'Guardando...' : 'Guardar' }}</button>
+    <button type="button" (click)="volver()">Volver</button>
+  </form>
+</section>

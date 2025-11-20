@@ -1,39 +1,6 @@
 <!-- src/app/dashboard/home/home.html -->
-<div class="flex min-h-screen bg-[var(--background-color)] text-[var(--text-primary)]">
-  <!-- Sidebar -->
-  <aside class="w-64 bg-slate-900 p-6 flex flex-col justify-between">
-    <div>
-      <div class="mb-8">
-        <h1 class="text-2xl font-bold">No se </h1>
-        <p class="text-[var(--text-secondary)] text-sm">Bienvenido</p>
-      </div>
-      <nav class="flex flex-col gap-2">
-        <a routerLink="/incio" class="flex items-center gap-3 px-4 py-2 rounded-md bg-[var(--primary-color)] text-white font-medium">
-          <span>Inicio</span>
-        </a>
-        <a routerLink="/operaciones-igv" class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
-          <span>Operaciones de IGV</span>
-        </a>
-        <a class="flex items-center gap-3 px-4 py-2 rounded-md text-[var(--text-secondary)] cursor-not-allowed">
-          <span>Trabajadores</span>
-        </a>
-        <a class="flex items-center gap-3 px-4 py-2 rounded-md text-[var(--text-secondary)] cursor-not-allowed">
-          <span>Notificaciones</span>
-        </a>
-        <a class="flex items-center gap-3 px-4 py-2 rounded-md text-[var(--text-secondary)] cursor-not-allowed">
-          <span>Perfil</span>
-        </a>
-      </nav>
-    </div>
-    <div>
-      <a routerLink="/ayuda" class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors text-[var(--text-secondary)]">
-        <span>Ayuda</span>
-      </a>
-    </div>
-  </aside>
-
-  <!-- Main -->
-  <main class="flex-1 p-8">
+<div>
+  <main class="p-8">
     <header class="mb-8">
       <h1 class="text-4xl font-bold">Panel de Control</h1>
     </header>
@@ -75,7 +42,7 @@
             </div>
           </div>
 
-          <div *ngIf="proximos?.length === 0" class="p-4 bg-[var(--card-background-color)] rounded">
+          <div *ngIf="proximos.length === 0" class="p-4 bg-[var(--card-background-color)] rounded">
             <p class="text-sm text-[var(--text-secondary)]">No hay vencimientos próximos.</p>
           </div>
 

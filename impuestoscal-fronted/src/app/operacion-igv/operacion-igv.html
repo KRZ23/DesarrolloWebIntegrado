@@ -1,36 +1,4 @@
-<div class="flex min-h-screen bg-[var(--background-color)] text-[var(--text-primary)]">
-  <aside class="w-64 bg-[var(--background-color)] p-6 flex flex-col justify-between">
-    <div>
-      <div class="mb-8">
-        <h1 class="text-2xl font-bold">No se </h1>
-        <p class="text-[var(--text-secondary)] text-sm">Bienvenido</p>
-      </div>
-      <nav class="flex flex-col gap-2">
-        <a routerLink="/inicio" class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
-          <span>Inicio</span>
-        </a>
-        <a routerLink="/operaciones-igv" class="flex items-center gap-3 px-4 py-2 rounded-md bg-[var(--primary-color)] text-[var(--text-primary)] font-medium">
-          <span>Operaciones de IGV</span>
-        </a>
-        <a class="flex items-center gap-3 px-4 py-2 rounded-md text-[var(--text-secondary)] cursor-not-allowed">
-          <span>Trabajadores</span>
-        </a>
-        <a class="flex items-center gap-3 px-4 py-2 rounded-md text-[var(--text-secondary)] cursor-not-allowed">
-          <span>Notificaciones</span>
-        </a>
-        <a class="flex items-center gap-3 px-4 py-2 rounded-md text-[var(--text-secondary)] cursor-not-allowed">
-          <span>Perfil</span>
-        </a>
-      </nav>
-    </div>
-    <div>
-      <a routerLink="/ayuda" class="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-slate-800 transition-colors text-[var(--text-secondary)]">
-        <span>Ayuda</span>
-      </a>
-    </div>
-  </aside>
-
-  <div class="p-6 flex-1">
+<div class="p-6">
     <div class="max-w-5xl mx-auto">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold">Operaciones IGV</h2>
@@ -98,52 +66,51 @@
     <div *ngIf="editing" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div class="bg-white p-6 rounded w-96 text-black">
         <h3 class="text-lg font-semibold mb-3">{{ editId ? 'Editar operación' : 'Nueva operación' }}</h3>
-
-        <div class="space-y-3">
+        <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-3">
           <div>
             <label class="block text-sm">Tipo</label>
-            <select [(ngModel)]="model.tipo" class="w-full p-2 rounded bg-slate-100 text-black">
+            <select formControlName="tipo" class="w-full p-2 rounded bg-slate-100 text-black">
               <option value="VENTA">VENTA</option>
               <option value="COMPRA">COMPRA</option>
             </select>
+            <small class="text-red-500" *ngIf="form.get('tipo')?.invalid && form.get('tipo')?.touched">Requerido</small>
           </div>
-
           <div>
             <label class="block text-sm">Número documento</label>
-            <input [(ngModel)]="model.numeroDocumento" class="w-full p-2 rounded bg-slate-100 text-black"/>
+            <input formControlName="numeroDocumento" class="w-full p-2 rounded bg-slate-100 text-black"/>
+            <small class="text-red-500" *ngIf="form.get('numeroDocumento')?.touched && form.get('numeroDocumento')?.errors?.['required']">Requerido</small>
+            <small class="text-red-500" *ngIf="form.get('numeroDocumento')?.touched && form.get('numeroDocumento')?.errors?.['pattern']">Formato alfanumérico 3-30</small>
           </div>
-
           <div>
             <label class="block text-sm">Fecha operación</label>
-            <input type="date" [(ngModel)]="model.fechaOperacion" class="w-full p-2 rounded bg-slate-100 text-black"/>
+            <input type="date" formControlName="fechaOperacion" class="w-full p-2 rounded bg-slate-100 text-black"/>
+            <small class="text-red-500" *ngIf="form.get('fechaOperacion')?.invalid && form.get('fechaOperacion')?.touched">Requerida</small>
           </div>
-
           <div>
             <label class="block text-sm">Razón social tercero</label>
-            <input [(ngModel)]="model.razonSocialTercero" class="w-full p-2 rounded bg-slate-100 text-black"/>
+            <input formControlName="razonSocialTercero" class="w-full p-2 rounded bg-slate-100 text-black"/>
+            <small class="text-red-500" *ngIf="form.get('razonSocialTercero')?.touched && form.get('razonSocialTercero')?.errors?.['maxlength']">Máximo 120 caracteres</small>
           </div>
-
           <div>
             <label class="block text-sm">RUC tercero</label>
-            <input [(ngModel)]="model.rucTercero" class="w-full p-2 rounded bg-slate-100 text-black"/>
+            <input formControlName="rucTercero" class="w-full p-2 rounded bg-slate-100 text-black"/>
+            <small class="text-red-500" *ngIf="form.get('rucTercero')?.touched && form.get('rucTercero')?.errors?.['pattern']">RUC 11 dígitos</small>
           </div>
-
           <div>
             <label class="block text-sm">Base imponible</label>
-            <input type="number" step="0.01" [(ngModel)]="model.baseImponible" class="w-full p-2 rounded bg-slate-100 text-black"/>
+            <input type="number" step="0.01" formControlName="baseImponible" class="w-full p-2 rounded bg-slate-100 text-black"/>
+            <small class="text-red-500" *ngIf="form.get('baseImponible')?.invalid && form.get('baseImponible')?.touched">Mayor a 0</small>
           </div>
-
           <div>
             <label class="block text-sm">Descripción</label>
-            <textarea [(ngModel)]="model.descripcion" class="w-full p-2 rounded bg-slate-100 text-black"></textarea>
+            <textarea formControlName="descripcion" class="w-full p-2 rounded bg-slate-100 text-black"></textarea>
+            <small class="text-red-500" *ngIf="form.get('descripcion')?.touched && form.get('descripcion')?.errors?.['maxlength']">Máximo 250 caracteres</small>
           </div>
-
           <div class="flex justify-end gap-2 mt-4">
-            <button class="px-3 py-2 bg-gray-400 rounded text-black" (click)="cancelar()">Cancelar</button>
-            <button class="px-3 py-2 bg-blue-600 rounded text-white" (click)="guardar()">{{ saving ? 'Guardando...' : (editId ? 'Actualizar' : 'Crear') }}</button>
+            <button type="button" class="px-3 py-2 bg-gray-400 rounded text-black" (click)="cancelar()">Cancelar</button>
+            <button type="submit" class="px-3 py-2 bg-blue-600 rounded text-white" [disabled]="saving || form.invalid">{{ saving ? 'Guardando...' : (editId ? 'Actualizar' : 'Crear') }}</button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
-  </div>
 </div>

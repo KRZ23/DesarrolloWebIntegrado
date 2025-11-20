@@ -38,7 +38,9 @@ import { Component, OnInit } from '@angular/core';
 import { DashboardService, DashboardResumen, RegistroResp, RegistroCreate } from '../dashboard.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../../auth/auth.service';
+import { TokenService } from '../../core/services/token.service';
 
 @Component({
   selector: 'app-home',
@@ -63,12 +65,20 @@ export class Home implements OnInit {
   nuevo: RegistroCreate = { tipoImpuesto: '', monto: 0, fechaVencimiento: '' };
   creando = false;
 
-  constructor(private dashboardService: DashboardService) {}
+  canIGV = false;
+  canRecibos = false;
+  canTrabajadores = false;
+
+  constructor(private dashboardService: DashboardService, private auth: AuthService, private router: Router, private tokenSvc: TokenService) {}
 
   ngOnInit(): void {
     this.cargarResumen();
     this.cargarRegistros();
     this.cargarProximos(7);
+    const roles = this.tokenSvc.getRoles();
+    this.canIGV = roles.includes('USUARIO_JURIDICO') || roles.includes('ADMIN');
+    this.canRecibos = roles.includes('USUARIO_NATURAL') || roles.includes('ADMIN');
+    this.canTrabajadores = roles.includes('USUARIO_JURIDICO') || roles.includes('ADMIN');
   }
 
   cargarResumen(): void {
@@ -209,6 +219,11 @@ guardarEdicion(): void {
       this.editLoading = false;
     }
   });
+}
+
+logout(): void {
+  this.auth.logout();
+  this.router.navigate(['/iniciar-sesion']);
 }
 
 }

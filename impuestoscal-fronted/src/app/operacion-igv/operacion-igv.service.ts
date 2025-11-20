@@ -2,11 +2,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { OperacionIGVResp, OperacionIGVCreate, OperacionIGVUpdate, ResumenIGV } from './operacion-igv.models';
 
 @Injectable({ providedIn: 'root' })
 export class OperacionIGVService {
-  private base = 'http://localhost:8082/api/operaciones-igv';
+  private base = `${environment.apiBaseUrl}/operaciones-igv`;
 
   constructor(private http: HttpClient) {}
 

@@ -2,28 +2,33 @@
 import { Component } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [RouterModule, CommonModule, FormsModule],
+  imports: [RouterModule, CommonModule, ReactiveFormsModule],
   templateUrl: './register.html',
   styleUrls: ['./register.css']
 })
 export class RegisterComponent {
-  nombre = '';
-  rut10 = '';
-  email = ''; // opcional si el backend no lo usa, puedes eliminarlo
-  telefono = '';
-  tipoCuenta = ''; // "Persona Natural" o "Persona Jurídica" en UI
-  password = '';
-  confirmPassword = '';
-  aceptoTerminos = false;
+  form!: FormGroup;
   loading = false;
+  errorMsg: string | null = null;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router, private fb: FormBuilder) {
+    this.form = this.fb.group({
+      nombre: ['', [Validators.required, Validators.minLength(2)]],
+      rut10: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+      email: ['', [Validators.email]],
+      telefono: [''],
+      tipoCuenta: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]],
+      aceptoTerminos: [false, Validators.requiredTrue]
+    });
+  }
 
   private mapTipoCuentaToBackend(tipo: string) {
     // Asegúrate que coincida con lo que espera tu backend: "NATURAL" o "JURIDICA"
@@ -32,40 +37,32 @@ export class RegisterComponent {
   }
 
   onSubmit() {
-    if (!this.aceptoTerminos) {
-      alert('Debes aceptar los términos');
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
-    if (this.password !== this.confirmPassword) {
-      alert('Las contraseñas no coinciden');
+    const { nombre, rut10, tipoCuenta, password, confirmPassword } = this.form.value as any;
+    if (password !== confirmPassword) {
+      this.errorMsg = 'Las contraseñas no coinciden';
       return;
     }
-    if (!this.rut10 || !this.password || !this.nombre) {
-      alert('Completa los campos obligatorios.');
-      return;
-    }
-
     const payload = {
-      rut10: String(this.rut10).padStart(10, '0').slice(0,10), 
-      claveSol: this.password,
-      tipoPersona: this.mapTipoCuentaToBackend(this.tipoCuenta),
-      nombre: this.nombre
+      rut10: String(rut10).padStart(10, '0').slice(0, 10),
+      claveSol: password,
+      tipoPersona: this.mapTipoCuentaToBackend(tipoCuenta),
+      nombre
     };
-
     this.loading = true;
+    this.errorMsg = null;
     this.authService.register(payload).subscribe({
-      next: (res) => {
+      next: () => {
         this.loading = false;
-        // éxito y  login
-        alert('Registro exitoso. Inicia sesión.');
         this.router.navigate(['/iniciar-sesion']);
       },
       error: (err) => {
         this.loading = false;
-        // maneja errores comunes (400 / 409)
-        console.error('Error al registrar:', err);
         const msg = err?.error?.message || err?.error || 'Error al registrar';
-        alert(msg);
+        this.errorMsg = msg;
       }
     });
   }

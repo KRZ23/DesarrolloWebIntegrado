@@ -1,0 +1,75 @@
+<div class="max-w-2xl mx-auto p-6">
+  <h2 class="text-2xl font-bold mb-4">{{ editId ? 'Editar Trabajador' : 'Nuevo Trabajador' }}</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="md:col-span-1">
+      <label class="block text-sm mb-1">DNI</label>
+      <input formControlName="dni" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+      <small *ngIf="form.get('dni')?.touched && form.get('dni')?.errors?.['required']" class="text-red-400">Requerido</small>
+      <small *ngIf="form.get('dni')?.touched && form.get('dni')?.errors?.['pattern']" class="text-red-400">Debe tener 8 dígitos</small>
+    </div>
+    <div class="md:col-span-1">
+      <label class="block text-sm mb-1">Nombres</label>
+      <input formControlName="nombres" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+      <small *ngIf="form.get('nombres')?.touched && form.get('nombres')?.errors?.['required']" class="text-red-400">Requerido</small>
+      <small *ngIf="form.get('nombres')?.touched && form.get('nombres')?.errors?.['minlength']" class="text-red-400">Mínimo 2 caracteres</small>
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Apellido paterno</label>
+      <input formControlName="apellidoPaterno" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+      <small *ngIf="form.get('apellidoPaterno')?.touched && form.get('apellidoPaterno')?.errors?.['required']" class="text-red-400">Requerido</small>
+      <small *ngIf="form.get('apellidoPaterno')?.touched && form.get('apellidoPaterno')?.errors?.['minlength']" class="text-red-400">Mínimo 2 caracteres</small>
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Apellido materno</label>
+      <input formControlName="apellidoMaterno" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+      <small *ngIf="form.get('apellidoMaterno')?.touched && form.get('apellidoMaterno')?.errors?.['required']" class="text-red-400">Requerido</small>
+      <small *ngIf="form.get('apellidoMaterno')?.touched && form.get('apellidoMaterno')?.errors?.['minlength']" class="text-red-400">Mínimo 2 caracteres</small>
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Email</label>
+      <input formControlName="email" type="email" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+      <small *ngIf="form.get('email')?.touched && form.get('email')?.errors?.['email']" class="text-red-400">Formato inválido</small>
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Teléfono</label>
+      <input formControlName="telefono" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+      <small *ngIf="form.get('telefono')?.touched && form.get('telefono')?.errors?.['pattern']" class="text-red-400">Sólo dígitos (7-15)</small>
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Dirección</label>
+      <input formControlName="direccion" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+      <small *ngIf="form.get('direccion')?.touched && form.get('direccion')?.errors?.['minlength']" class="text-red-400">Mínimo 5 caracteres</small>
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Fecha ingreso</label>
+      <input formControlName="fechaIngreso" type="date" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+      <small *ngIf="form.get('fechaIngreso')?.touched && form.get('fechaIngreso')?.errors?.['required']" class="text-red-400">Requerida</small>
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Sueldo bruto</label>
+      <input formControlName="sueldoBruto" type="number" step="0.01" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+      <small *ngIf="form.get('sueldoBruto')?.touched && form.get('sueldoBruto')?.invalid" class="text-red-400">Mayor a 0</small>
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Régimen pensionario</label>
+      <select formControlName="regimenPensionario" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]">
+        <option *ngFor="let r of regimenes" [value]="r">{{ r }}</option>
+      </select>
+      <small *ngIf="form.get('regimenPensionario')?.touched && form.get('regimenPensionario')?.errors?.['required']" class="text-red-400">Requerido</small>
+    </div>
+    <div>
+      <label class="block text-sm mb-1">AFP Nombre (si AFP)</label>
+      <input formControlName="afpNombre" class="w-full p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+      <small *ngIf="form.get('afpNombre')?.touched && form.get('afpNombre')?.errors?.['required']" class="text-red-400">Requerido si AFP</small>
+      <small *ngIf="form.get('afpNombre')?.touched && form.get('afpNombre')?.errors?.['minlength']" class="text-red-400">Mínimo 2 caracteres</small>
+    </div>
+    <div class="md:col-span-2 flex justify-end gap-2 mt-4">
+      <button type="button" (click)="cancelar()" class="px-4 py-2 bg-gray-500 text-white rounded">Cancelar</button>
+      <button type="submit" [disabled]="saving || form.invalid" class="px-4 py-2 bg-[var(--primary-color)] text-white rounded disabled:opacity-50">
+        <span *ngIf="!saving">{{ editId ? 'Actualizar' : 'Crear' }}</span>
+        <span *ngIf="saving">Guardando...</span>
+      </button>
+    </div>
+  </form>
+  <p *ngIf="error" class="mt-4 text-sm text-red-400">{{ error }}</p>
+</div>
