@@ -28,6 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<jjwt.version>0.11.5</jjwt.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -41,6 +42,15 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
@@ -58,6 +68,24 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<!-- JWT -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>${jjwt.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -67,6 +95,12 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<!-- SchemaSpy para generar diagramas ER -->
+		<dependency>
+			<groupId>org.schemaspy</groupId>
+			<artifactId>schemaspy</artifactId>
+			<version>6.2.4</version>
 		</dependency>
 	</dependencies>
 
@@ -95,6 +129,39 @@
 						</exclude>
 					</excludes>
 				</configuration>
+			</plugin>
+			<!-- Plugin para generar diagrama ER -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>generate-er-diagram</id>
+						<phase>none</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>org.schemaspy.Main</mainClass>
+							<arguments>
+								<argument>-t</argument>
+								<argument>h2</argument>
+								<argument>-db</argument>
+								<argument>jdbc:h2:file:./data/impuestoscal</argument>
+								<argument>-u</argument>
+								<argument>sa</argument>
+								<argument>-p</argument>
+								<argument></argument>
+								<argument>-s</argument>
+								<argument>PUBLIC</argument>
+								<argument>-o</argument>
+								<argument>./target/database-docs</argument>
+								<argument>-vizjs</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

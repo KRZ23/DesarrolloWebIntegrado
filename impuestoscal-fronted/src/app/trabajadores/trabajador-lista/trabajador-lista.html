@@ -1,0 +1,72 @@
+<div class="p-6 max-w-6xl mx-auto">
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-2xl font-bold">Trabajadores</h2>
+    <button (click)="nuevo()" class="px-4 py-2 rounded bg-[var(--primary-color)] text-white font-semibold">Nuevo</button>
+  </div>
+
+  <div class="flex items-end gap-2 mb-6">
+    <div>
+      <label class="block text-sm mb-1">Mes</label>
+      <input type="number" [(ngModel)]="mesResumen" class="w-24 p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Año</label>
+      <input type="number" [(ngModel)]="anioResumen" class="w-28 p-2 rounded bg-[var(--card-background-color)] text-[var(--text-primary)]" />
+    </div>
+    <button (click)="calcularResumen()" class="px-3 py-2 bg-[var(--accent-color)] text-[var(--text-primary)] rounded">Resumen planilla</button>
+    <span *ngIf="cargandoResumen" class="text-sm text-[var(--text-secondary)]">Calculando...</span>
+  </div>
+
+  <div *ngIf="resumen && !cargandoResumen" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="p-4 rounded bg-[var(--card-background-color)]">
+      <p class="text-xs text-[var(--text-secondary)]">Total trabajadores</p>
+      <p class="text-xl font-semibold">{{ resumen.totalTrabajadores }}</p>
+    </div>
+    <div class="p-4 rounded bg-[var(--card-background-color)]">
+      <p class="text-xs text-[var(--text-secondary)]">Sueldos brutos</p>
+      <p class="text-xl font-semibold">{{ resumen.totalSueldosBrutos | number:'1.2-2' }}</p>
+    </div>
+    <div class="p-4 rounded bg-[var(--card-background-color)]">
+      <p class="text-xs text-[var(--text-secondary)]">Sueldos netos</p>
+      <p class="text-xl font-semibold">{{ resumen.totalSueldosNetos | number:'1.2-2' }}</p>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto bg-[var(--card-background-color)] rounded p-2">
+    <table class="w-full table-auto">
+      <thead>
+        <tr class="text-left">
+          <th class="p-2">DNI</th>
+          <th class="p-2">Nombre</th>
+          <th class="p-2">Ingreso</th>
+          <th class="p-2">Bruto</th>
+          <th class="p-2">Neto</th>
+          <th class="p-2">Regimen</th>
+          <th class="p-2">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of trabajadores">
+          <td class="p-2">{{ t.dni }}</td>
+          <td class="p-2">{{ t.nombreCompleto || (t.nombres + ' ' + t.apellidoPaterno) }}</td>
+          <td class="p-2">{{ t.fechaIngreso }}</td>
+          <td class="p-2">{{ t.sueldoBruto | number:'1.2-2' }}</td>
+          <td class="p-2">{{ t.sueldoNeto | number:'1.2-2' }}</td>
+          <td class="p-2">{{ t.regimenPensionario }}</td>
+          <td class="p-2">
+            <button class="px-2 py-1 mr-2 bg-yellow-500 text-white rounded" (click)="editar(t)">Editar</button>
+            <button class="px-2 py-1 bg-red-600 text-white rounded" (click)="eliminar(t)">Eliminar</button>
+          </td>
+        </tr>
+        <tr *ngIf="!loading && trabajadores.length === 0">
+          <td class="p-4 text-center" colspan="7">No hay trabajadores</td>
+        </tr>
+        <tr *ngIf="loading">
+          <td class="p-4 text-center" colspan="7">Cargando...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p *ngIf="error" class="mt-4 text-sm text-red-400">{{ error }}</p>
+</div>

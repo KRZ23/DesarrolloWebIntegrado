@@ -1,0 +1,45 @@
+<div class="relative flex size-full min-h-screen flex-col overflow-x-hidden">
+  <div class="layout-container flex h-full grow flex-col">
+    <!-- Header removido para una vista de autenticación limpia -->
+    <main class="flex flex-1 items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div class="w-full max-w-md space-y-8">
+        <div>
+          <h2 class="text-center text-3xl font-bold tracking-tight text-[var(--text-primary)]">Bienvenido de vuelta</h2>
+          <p class="mt-2 text-center text-sm text-[var(--text-secondary)]">Inicia sesión para gestionar tus tributos e impuestos.</p>
+        </div>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+          <div class="space-y-4 rounded-md">
+            <div>
+              <label class="sr-only" for="rut10">Usuario o RUC</label>
+              <input id="rut10" type="text" formControlName="rut10"
+                     class="relative block w-full appearance-none rounded-md border border-[var(--secondary-color)] bg-[var(--secondary-color)] px-3 py-3 text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:z-10 focus:border-[var(--primary-color)] focus:outline-none focus:ring-[var(--primary-color)] sm:text-sm"
+                     placeholder="Usuario o RUC" />
+              <p *ngIf="form.get('rut10')?.touched && form.get('rut10')?.invalid" class="mt-1 text-xs text-red-400">Usuario/RUC requerido</p>
+            </div>
+            <div>
+              <label class="sr-only" for="password">Contraseña</label>
+              <input id="password" type="password" formControlName="password"
+                     class="relative block w-full appearance-none rounded-md border border-[var(--secondary-color)] bg-[var(--secondary-color)] px-3 py-3 text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:z-10 focus:border-[var(--primary-color)] focus:outline-none focus:ring-[var(--primary-color)] sm:text-sm"
+                     placeholder="Contraseña" />
+              <p *ngIf="form.get('password')?.touched && form.get('password')?.invalid" class="mt-1 text-xs text-red-400">Contraseña requerida</p>
+            </div>
+          </div>
+          <div>
+            <button type="submit" [disabled]="form.invalid || loading"
+                    class="group relative flex w-full justify-center rounded-md border border-transparent bg-[var(--primary-color)] px-4 py-2 text-sm font-medium text-white hover:bg-opacity-90 disabled:opacity-50">
+              <span *ngIf="!loading">Iniciar sesión</span>
+              <span *ngIf="loading">Ingresando...</span>
+            </button>
+          </div>
+        </form>
+        <p *ngIf="errorMsg" class="text-center text-sm text-red-400">{{ errorMsg }}</p>
+        <p class="text-center text-sm text-[var(--text-secondary)]">
+          ¿No tienes una cuenta?
+          <a class="font-medium text-[var(--primary-color)] hover:text-opacity-80" routerLink="/registrarse">Registrarse</a>
+        </p>
+      </div>
+    </main>
+  </div>
+</div>
+
+

@@ -1,0 +1,12 @@
+:root {
+  --primary-color: #1173d4;
+  --background-color: #111827;
+  --card-background-color: #1f2937;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --accent-color: #3b82f6;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}

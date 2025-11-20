@@ -1,0 +1,269 @@
+<!-- src/app/dashboard/home/home.html -->
+<div>
+  <main class="p-8">
+    <header class="mb-8">
+      <h1 class="text-4xl font-bold">Panel de Control</h1>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Sección izquierda -->
+      <div class="lg:col-span-2">
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold mb-4">Tareas Pendientes</h2>
+
+          <!-- Resumen / Spinner -->
+          <div *ngIf="loadingResumen" class="mb-4 p-4 bg-[var(--card-background-color)] rounded">
+            Cargando resumen...
+          </div>
+
+          <div class="space-y-4">
+            <div class="bg-[var(--card-background-color)] p-4 rounded-md flex items-center gap-4">
+              <div>
+                <p class="font-medium">Pendientes</p>
+                <p class="text-sm text-[var(--text-secondary)]">{{ pendientes }}</p>
+              </div>
+            </div>
+            <div class="bg-[var(--card-background-color)] p-4 rounded-md flex items-center gap-4">
+              <div>
+                <p class="font-medium">Vencidos</p>
+                <p class="text-sm text-[var(--text-secondary)]">{{ vencidos }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Próximos vencimientos -->
+        <section class="mb-8">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-semibold">Próximos Vencimientos</h2>
+            <div class="text-sm text-[var(--text-secondary)]">
+              <button class="text-sm underline" (click)="cargarProximos(7)">7 días</button>
+              <button class="text-sm underline ml-2" (click)="cargarProximos(30)">30 días</button>
+            </div>
+          </div>
+
+          <div *ngIf="proximos.length === 0" class="p-4 bg-[var(--card-background-color)] rounded">
+            <p class="text-sm text-[var(--text-secondary)]">No hay vencimientos próximos.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div *ngFor="let p of proximos" class="bg-[var(--card-background-color)] p-4 rounded-md flex items-center justify-between">
+              <div>
+                <p class="font-medium">{{ p.tipoImpuesto }} — {{ p.monto | number:'1.2-2' }}</p>
+                <p class="text-sm text-[var(--text-secondary)]">Vence: {{ p.fechaVencimiento }}</p>
+              </div>
+              <div class="text-sm">
+                <span class="px-3 py-1 rounded text-xs"
+                      [ngClass]="{ 'bg-yellow-600 text-white': p.estado === 'PENDIENTE', 'bg-green-600 text-white': p.estado === 'PAGADO', 'bg-red-600 text-white': p.estado === 'VENCIDO' }">
+                  {{ p.estado }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Lista de registros (tabla) -->
+        <section>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-semibold">Registros</h2>
+            <div *ngIf="loadingRegistros" class="text-sm text-[var(--text-secondary)]">Cargando...</div>
+          </div>
+
+          <div class="overflow-x-auto bg-[var(--card-background-color)] rounded p-2">
+            <table class="w-full table-auto border-collapse">
+              <thead>
+                <tr class="text-left">
+                  <th class="p-2">ID</th>
+                  <th class="p-2">Tipo impuesto</th>
+                  <th class="p-2">Monto</th>
+                  <th class="p-2">Fecha vencimiento</th>
+                  <th class="p-2">Estado</th>
+                  <th class="p-2">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of registros">
+                  <td class="p-2">{{ r.id }}</td>
+                  <td class="p-2">{{ r.tipoImpuesto }}</td>
+                  <td class="p-2">{{ r.monto | number:'1.2-2' }}</td>
+                  <td class="p-2">{{ r.fechaVencimiento }}</td>
+                  <td class="p-2">{{ r.estado }}</td>
+                  <td class="p-2">
+                    <button class="px-2 py-1 mr-2 bg-yellow-500 text-white rounded" title="Editar" (click)="abrirEditar(r)">Editar</button>
+                    <button class="px-2 py-1 bg-red-600 text-white rounded" (click)="eliminar(r.id)">Eliminar</button>
+                  </td>
+                </tr>
+                <tr *ngIf="!loadingRegistros && registros.length === 0">
+                  <td class="p-4 text-center" colspan="6">No hay registros</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <!-- MODAL EDITAR REGISTRO -->
+<!-- MODAL EDITAR REGISTRO -->
+<div
+  id="modal-editar"
+  *ngIf="editId !== null"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-xl shadow-lg w-96 p-6 relative">
+    <h3 class="text-xl font-semibold mb-4 text-gray-800">Editar registro</h3>
+
+    <form (ngSubmit)="guardarEdicion()" class="space-y-4">
+      <!-- Tipo de impuesto -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Tipo de impuesto</label>
+        <input
+          type="text"
+          [(ngModel)]="editModel.tipoImpuesto"
+          name="tipoImpuesto"
+          class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-300 text-black"
+          required
+        />
+      </div>
+
+      <!-- Monto -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Monto</label>
+        <input
+          type="number"
+          [(ngModel)]="editModel.monto"
+          name="monto"
+          min="0"
+          step="0.01"
+          class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-300 text-black"
+          required
+        />
+      </div>
+
+      <!-- Fecha de vencimiento -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Fecha de vencimiento</label>
+        <input
+          type="date"
+          [(ngModel)]="editModel.fechaVencimiento"
+          name="fechaVencimiento"
+          class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-300 text-black"
+          required
+        />
+      </div>
+
+      <!-- Estado -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Estado</label>
+        <select
+          [(ngModel)]="editModel.estado"
+          name="estado"
+          class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-300 text-black"
+        >
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="PAGADO">Pagado</option>
+          <option value="VENCIDO">Vencido</option>
+        </select>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex justify-end gap-2 mt-6">
+        <button
+          type="button"
+          class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+          (click)="cancelarEditar()"
+          [disabled]="editLoading"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          [disabled]="editLoading"
+        >
+          <span *ngIf="!editLoading">Guardar</span>
+          <span *ngIf="editLoading">Guardando...</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Botón de cerrar (X) -->
+    <button
+      (click)="cancelarEditar()"
+      class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-lg"
+      title="Cerrar"
+    >
+      ✕
+    </button>
+  </div>
+</div>
+
+
+      </div>
+
+      <!-- Sección derecha -->
+      <div class="lg:col-span-1">
+        <section class="bg-[var(--card-background-color)] p-6 rounded-lg mb-8">
+          <h2 class="text-xl font-semibold mb-4">Estado de Impuestos</h2>
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <p class="text-sm font-medium">Impuestos Pagados</p>
+                <p class="text-lg font-bold text-green-400">{{ total - pendientes - vencidos }}</p>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <p class="text-sm font-medium">Impuestos Pendientes</p>
+                <p class="text-lg font-bold text-orange-400">{{ pendientes }}</p>
+              </div>
+            </div>
+            <div class="border-t border-slate-700 my-4"></div>
+            <div class="flex justify-between items-center font-bold text-lg">
+              <p>Total de Impuestos</p>
+              <p>{{ total }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="bg-[var(--card-background-color)] p-6 rounded-lg mb-8">
+          <h2 class="text-xl font-semibold mb-4">Crear Registro Rápido</h2>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm text-[var(--text-secondary)] mb-1">Tipo impuesto</label>
+              <input class="w-full p-2 rounded bg-slate-800 text-white" [(ngModel)]="nuevo.tipoImpuesto" placeholder="Ej: IGV" />
+            </div>
+
+            <div>
+              <label class="block text-sm text-[var(--text-secondary)] mb-1">Monto</label>
+              <input class="w-full p-2 rounded bg-slate-800 text-white" type="number" [(ngModel)]="nuevo.monto" />
+            </div>
+
+            <div>
+              <label class="block text-sm text-[var(--text-secondary)] mb-1">Fecha vencimiento</label>
+              <input class="w-full p-2 rounded bg-slate-800 text-white" type="date" [(ngModel)]="nuevo.fechaVencimiento" />
+            </div>
+
+            <div>
+              <button class="w-full px-4 py-2 bg-[var(--primary-color)] text-white rounded-md font-bold" (click)="crearRegistro()" [disabled]="creando">
+                {{ creando ? 'Creando...' : 'Crear registro' }}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="bg-[var(--card-background-color)] p-6 rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">Acciones Rápidas</h2>
+          <div class="flex flex-col gap-4">
+            <button class="w-full flex items-center justify-center gap-2 rounded-md h-12 px-4 bg-[var(--primary-color)] text-white text-base font-bold hover:bg-blue-600 transition-colors">
+              <span>Presentar Declaración</span>
+            </button>
+            <button class="w-full flex items-center justify-center gap-2 rounded-md h-12 px-4 bg-slate-700 text-white text-base font-bold hover:bg-slate-600 transition-colors">
+              <span>Realizar Pago</span>
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+

@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+// Paleta y variables
+$color-primary: #1173d4;
+$color-accent: #3b82f6;
+$color-bg: #111827;
+$color-card: #1f2937;
+$color-text: #ffffff;
+$color-text-secondary: #9ca3af;
+$break-md: 768px;
+$break-lg: 1024px;
+
+:root {
+  --primary-color: #{$color-primary};
+  --background-color: #{$color-bg};
+  --card-background-color: #{$color-card};
+  --text-primary: #{$color-text};
+  --text-secondary: #{$color-text-secondary};
+  --accent-color: #{$color-accent};
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+// Layout responsive básico para sidebars
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  .sidebar {
+    width: 260px;
+    background: var(--background-color);
+  }
+  .content { flex: 1; padding: 1.5rem; }
+}
+
+@media (max-width: $break-md) {
+  .app-layout {
+    flex-direction: column;
+    .sidebar { width: 100%; order: 0; }
+    .content { order: 1; }
+  }
+}
+
+// Utilidades simples
+.text-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+// Cards
+.card {
+  background: var(--card-background-color);
+  border-radius: .75rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+// Botones primarios
+.btn-primary {
+  background: var(--primary-color);
+  color: var(--text-primary);
+  border: none;
+  padding: .65rem 1rem;
+  border-radius: .5rem;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover { filter: brightness(1.1); }
+  &:disabled { opacity: .6; cursor: not-allowed; }
+}
+
+// Formulario modal IGV mejora
+.modal {
+  background: rgba(0,0,0,.55);
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  .modal-box {
+    background: #fff; color: #111; padding: 1.5rem; width: 380px; border-radius: .75rem;
+  }
+}
+
+// Tabla responsive
+.table-wrapper { overflow-x: auto; }
+
+@media (max-width: $break-md) {
+  table thead { display: none; }
+  table tbody tr { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; margin-bottom: .75rem; background: var(--card-background-color); padding: .75rem; border-radius: .5rem; }
+  table tbody tr td { padding: .25rem 0; }
+}
