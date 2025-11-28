@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export interface DashboardResumen { total: number; pendientes: number; vencidos: number; }
+export interface DashboardResumen { total: number; pendientes: number; vencidos: number; pagados: number; }
 export interface RegistroResp { id: number; tipoImpuesto: string; monto: number; fechaVencimiento: string; estado: string; }
 export interface RegistroCreate { tipoImpuesto: string; monto: number; fechaVencimiento: string; estado?: string; }
 
@@ -18,6 +18,10 @@ export class DashboardService {
 
   getResumen(): Observable<DashboardResumen> {
     return this.http.get<DashboardResumen>(`${this.base}/dashboard`);
+  }
+
+  generarDeclaracionPdf(mes: number, anio: number): Observable<Blob> {
+    return this.http.get(`${this.base}/dashboard/declaracion-pdf?mes=${mes}&anio=${anio}`, { responseType: 'blob' });
   }
 
   listarRegistros(): Observable<RegistroResp[]> {

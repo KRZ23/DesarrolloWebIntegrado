@@ -53,6 +53,7 @@ export class Home implements OnInit {
   total = 0;
   pendientes = 0;
   vencidos = 0;
+  pagados = 0;
 
   registros: RegistroResp[] = [];
   proximos: RegistroResp[] = [];
@@ -89,6 +90,7 @@ export class Home implements OnInit {
         this.total = data.total;
         this.pendientes = data.pendientes;
         this.vencidos = data.vencidos;
+        this.pagados = data.pagados;
         this.loadingResumen = false;
       },
       error: (err) => {
@@ -152,78 +154,95 @@ export class Home implements OnInit {
   }
 
   // --- EDICIÓN: propiedades ---
-editId: number | null = null;
-editModel: { tipoImpuesto: string; monto: number; fechaVencimiento: string; estado?: string } = {
-  tipoImpuesto: '',
-  monto: 0,
-  fechaVencimiento: ''
-};
-editLoading = false;
-
-// --- EDICIÓN: abrir el editor con los datos del registro ---
-abrirEditar(r: RegistroResp): void {
-  this.editId = r.id;
-  const montoNum = typeof r.monto === 'string' ? Number(r.monto) : r.monto;
-  this.editModel = {
-    tipoImpuesto: r.tipoImpuesto,
-    monto: montoNum,
-    fechaVencimiento: r.fechaVencimiento, // debe ser 'YYYY-MM-DD'
-    estado: r.estado
+  editId: number | null = null;
+  editModel: { tipoImpuesto: string; monto: number; fechaVencimiento: string; estado?: string } = {
+    tipoImpuesto: '',
+    monto: 0,
+    fechaVencimiento: ''
   };
-  // opcional: desplazar la vista al modal si existe
-  setTimeout(() => {
-    const el = document.getElementById('modal-editar');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 0);
-}
+  editLoading = false;
 
-// --- EDICIÓN: cancelar ---
-cancelarEditar(): void {
-  this.editId = null;
-  this.editModel = { tipoImpuesto: '', monto: 0, fechaVencimiento: '' };
-  this.editLoading = false;
-}
-
-// --- EDICIÓN: guardar cambios (PUT) ---
-guardarEdicion(): void {
-  if (!this.editId) return;
-  if (!this.editModel.tipoImpuesto || !this.editModel.fechaVencimiento || !this.editModel.monto) {
-    alert('Completa tipo, monto y fecha.');
-    return;
-  }
-  if (this.editModel.monto <= 0) {
-    alert('El monto debe ser mayor que 0.');
-    return;
+  // --- EDICIÓN: abrir el editor con los datos del registro ---
+  abrirEditar(r: RegistroResp): void {
+    this.editId = r.id;
+    const montoNum = typeof r.monto === 'string' ? Number(r.monto) : r.monto;
+    this.editModel = {
+      tipoImpuesto: r.tipoImpuesto,
+      monto: montoNum,
+      fechaVencimiento: r.fechaVencimiento, // debe ser 'YYYY-MM-DD'
+      estado: r.estado
+    };
+    // opcional: desplazar la vista al modal si existe
+    setTimeout(() => {
+      const el = document.getElementById('modal-editar');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 0);
   }
 
-  this.editLoading = true;
-  const payload = {
-    tipoImpuesto: this.editModel.tipoImpuesto,
-    monto: this.editModel.monto,
-    fechaVencimiento: this.editModel.fechaVencimiento,
-    estado: this.editModel.estado
-  };
+  // --- EDICIÓN: cancelar ---
+  cancelarEditar(): void {
+    this.editId = null;
+    this.editModel = { tipoImpuesto: '', monto: 0, fechaVencimiento: '' };
+    this.editLoading = false;
+  }
 
-  this.dashboardService.actualizarRegistro(this.editId, payload).subscribe({
-    next: () => {
-      this.editLoading = false;
-      this.editId = null;
-      // refrescar datos
-      this.cargarResumen();
-      this.cargarRegistros();
-      this.cargarProximos(7);
-    },
-    error: (err) => {
-      console.error('Error actualizando registro', err);
-      alert(err?.error?.message || 'Error al actualizar');
-      this.editLoading = false;
+  // --- EDICIÓN: guardar cambios (PUT) ---
+  guardarEdicion(): void {
+    if (!this.editId) return;
+    if (!this.editModel.tipoImpuesto || !this.editModel.fechaVencimiento || !this.editModel.monto) {
+      alert('Completa tipo, monto y fecha.');
+      return;
     }
-  });
-}
+    if (this.editModel.monto <= 0) {
+      alert('El monto debe ser mayor que 0.');
+      return;
+    }
 
-logout(): void {
-  this.auth.logout();
-  this.router.navigate(['/iniciar-sesion']);
-}
+    this.editLoading = true;
+    const payload = {
+      tipoImpuesto: this.editModel.tipoImpuesto,
+      monto: this.editModel.monto,
+      fechaVencimiento: this.editModel.fechaVencimiento,
+      estado: this.editModel.estado
+    };
 
+    this.dashboardService.actualizarRegistro(this.editId, payload).subscribe({
+      next: () => {
+        this.editLoading = false;
+        this.editId = null;
+        // refrescar datos
+        this.cargarResumen();
+        this.cargarRegistros();
+        this.cargarProximos(7);
+      },
+      error: (err) => {
+        console.error('Error actualizando registro', err);
+        alert(err?.error?.message || 'Error al actualizar');
+        this.editLoading = false;
+      }
+    });
+  }
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigate(['/iniciar-sesion']);
+  }
+
+  presentarDeclaracion(): void {
+    const now = new Date();
+    const mes = now.getMonth() + 1;
+    const anio = now.getFullYear();
+    
+    this.dashboardService.generarDeclaracionPdf(mes, anio).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `declaracion-${mes}-${anio}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => console.error('Error generando PDF', err)
+    });
+  }
 }

@@ -1,46 +1,43 @@
 package com.devintegrado.impuestoscal.controller;
 
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.devintegrado.impuestoscal.service.DashboardService;
+import com.devintegrado.impuestoscal.service.PdfService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.devintegrado.impuestoscal.model.EstadoRegistro;
-import com.devintegrado.impuestoscal.model.Usuario;
-import com.devintegrado.impuestoscal.repository.RegistroTributarioRepository;
-import com.devintegrado.impuestoscal.repository.UsuarioRepository;
+import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/dashboard")
 public class DashboardController {
-    private final RegistroTributarioRepository registroRepository;
-    private final UsuarioRepository usuarioRepository;
 
-    public DashboardController(RegistroTributarioRepository registroRepository, UsuarioRepository usuarioRepository) {
-        this.registroRepository = registroRepository;
-        this.usuarioRepository = usuarioRepository;
+    private final DashboardService dashboardService;
+    private final PdfService pdfService;
+
+    public DashboardController(DashboardService dashboardService, PdfService pdfService) {
+        this.dashboardService = dashboardService;
+        this.pdfService = pdfService;
     }
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> resumen(Authentication auth) {
-        Usuario u = usuarioRepository.findByRut10(auth.getName()).orElseThrow();
-        int total = registroRepository.findByTitular(u).size();
-        int pendientes = registroRepository.findByTitularAndEstado(u, EstadoRegistro.PENDIENTE).size();
-        int vencidos = registroRepository
-                .findByTitularAndFechaVencimientoBeforeAndEstado(u, LocalDate.now(), EstadoRegistro.PENDIENTE)
-                .size();
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("total", total);
-        payload.put("pendientes", pendientes);
-        payload.put("vencidos", vencidos);
-        return ResponseEntity.ok(payload);
+        return ResponseEntity.ok(dashboardService.obtenerResumen(auth.getName()));
+    }
+
+    @GetMapping("/declaracion-pdf")
+    public ResponseEntity<byte[]> generarDeclaracion(
+            @RequestParam int mes,
+            @RequestParam int anio,
+            Authentication auth) {
+        byte[] pdf = pdfService.generarDeclaracionMensual(auth.getName(), mes, anio);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=declaracion.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 }
 

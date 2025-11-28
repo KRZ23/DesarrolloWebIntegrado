@@ -207,7 +207,7 @@
             <div>
               <div class="flex justify-between items-center mb-1">
                 <p class="text-sm font-medium">Impuestos Pagados</p>
-                <p class="text-lg font-bold text-green-400">{{ total - pendientes - vencidos }}</p>
+                <p class="text-lg font-bold text-green-400">{{ pagados }}</p>
               </div>
             </div>
             <div>
@@ -253,7 +253,7 @@
         <section class="bg-[var(--card-background-color)] p-6 rounded-lg">
           <h2 class="text-xl font-semibold mb-4">Acciones Rápidas</h2>
           <div class="flex flex-col gap-4">
-            <button class="w-full flex items-center justify-center gap-2 rounded-md h-12 px-4 bg-[var(--primary-color)] text-white text-base font-bold hover:bg-blue-600 transition-colors">
+            <button (click)="presentarDeclaracion()" class="w-full flex items-center justify-center gap-2 rounded-md h-12 px-4 bg-[var(--primary-color)] text-white text-base font-bold hover:bg-blue-600 transition-colors">
               <span>Presentar Declaración</span>
             </button>
             <button class="w-full flex items-center justify-center gap-2 rounded-md h-12 px-4 bg-slate-700 text-white text-base font-bold hover:bg-slate-600 transition-colors">
