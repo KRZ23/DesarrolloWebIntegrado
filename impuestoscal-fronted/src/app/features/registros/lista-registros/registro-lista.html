@@ -1,41 +1,75 @@
 <section class="registros-lista">
-  <h2>Registros</h2>
+  <h2>Gestión de Registros</h2>
+  
+  <!-- Barra de acciones -->
   <div class="acciones">
     <button (click)="irNuevo()">Nuevo Registro</button>
-    <button *ngIf="isAdmin" (click)="verTodosAdmin()">Ver todos (admin)</button>
-    <input type="text" placeholder="Buscar tipo" [(ngModel)]="filtroTipo"/>
+    <button *ngIf="isAdmin" (click)="verTodosAdmin()">Ver todos (Admin)</button>
+    <input 
+      type="text" 
+      placeholder="Buscar por tipo de impuesto..." 
+      [(ngModel)]="filtroTipo"
+    />
     <select [(ngModel)]="filtroEstado">
-      <option value="">Todos</option>
+      <option value="">Todos los estados</option>
       <option value="PENDIENTE">Pendiente</option>
       <option value="PAGADO">Pagado</option>
       <option value="VENCIDO">Vencido</option>
     </select>
   </div>
-  <div class="resumen-estado" *ngIf="registrosFiltrados.length > 0">
+
+  <!-- Resumen de estados -->
+  <div class="resumen-estado" *ngIf="!loading && registrosFiltrados.length > 0">
     <span>Pendientes: {{ countPendiente }}</span>
     <span>Pagados: {{ countPagado }}</span>
     <span>Vencidos: {{ countVencido }}</span>
   </div>
-  <table *ngIf="registrosFiltrados.length > 0">
-    <thead>
-      <tr>
-        <th>ID</th><th>Tipo</th><th>Monto</th><th>Fecha</th><th>Estado</th><th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let r of registrosFiltrados">
-        <td>{{ r.id }}</td>
-        <td>{{ r.tipoImpuesto }}</td>
-        <td>{{ r.monto | number:'1.2-2' }}</td>
-        <td>{{ r.fechaVencimiento }}</td>
-        <td>{{ r.estado }}</td>
-        <td>
-          <button (click)="verDetalle(r.id!)">Detalle</button>
-          <button (click)="editar(r.id!)">Editar</button>
-          <button (click)="eliminar(r.id!)">Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <p *ngIf="registrosFiltrados.length === 0">Sin registros.</p>
+
+  <!-- Loading state -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Tabla de registros -->
+  <div class="table-container" *ngIf="!loading && registrosFiltrados.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tipo de Impuesto</th>
+          <th>Monto (S/)</th>
+          <th>Fecha Vencimiento</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of registrosFiltrados">
+          <td>#{{ r.id }}</td>
+          <td>{{ r.tipoImpuesto }}</td>
+          <td>S/ {{ r.monto | number:'1.2-2' }}</td>
+          <td>{{ r.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
+          <td>
+            <span [style.color]="
+              r.estado === 'PAGADO' ? '#10b981' : 
+              r.estado === 'VENCIDO' ? '#ef4444' : '#f59e0b'
+            ">
+              {{ r.estado }}
+            </span>
+          </td>
+          <td>
+            <button (click)="verDetalle(r.id!)" title="Ver detalle">Ver</button>
+            <button (click)="editar(r.id!)" title="Editar registro">Editar</button>
+            <button (click)="eliminar(r.id!)" title="Eliminar registro">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Estado vacío -->
+  <div class="sin-registros" *ngIf="!loading && registrosFiltrados.length === 0">
+    <div class="sin-registros-icon">📋</div>
+    <p>No se encontraron registros que coincidan con los filtros aplicados.</p>
+  </div>
 </section>

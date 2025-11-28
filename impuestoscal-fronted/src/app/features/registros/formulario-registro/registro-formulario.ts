@@ -8,7 +8,8 @@ import { RegistrosService, Registro } from '../services/registros.service';
   selector: 'app-registro-formulario',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
-  templateUrl: './registro-formulario.html'
+  templateUrl: './registro-formulario.html',
+  styleUrls: ['./registro-formulario.css']
 })
 export class RegistroFormularioComponent implements OnInit {
   form!: FormGroup;

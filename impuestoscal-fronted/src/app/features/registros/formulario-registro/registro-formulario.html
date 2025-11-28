@@ -1,32 +1,82 @@
 <section class="registro-form">
-  <h2>{{ editMode ? 'Editar' : 'Nuevo' }} Registro</h2>
+  <h2>{{ editMode ? 'Editar' : 'Nuevo' }} Registro de Impuesto</h2>
+  
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <div>
-      <label>Tipo Impuesto</label>
-      <input formControlName="tipoImpuesto"/>
-      <small *ngIf="form.get('tipoImpuesto')?.touched && form.get('tipoImpuesto')?.errors?.['required']">Requerido</small>
-      <small *ngIf="form.get('tipoImpuesto')?.touched && form.get('tipoImpuesto')?.errors?.['minlength']">Mínimo 2</small>
-      <small *ngIf="form.get('tipoImpuesto')?.touched && form.get('tipoImpuesto')?.errors?.['maxlength']">Máximo 60</small>
+    <div class="form-info" *ngIf="!editMode">
+      <strong>Información:</strong> Complete todos los campos requeridos para registrar un nuevo impuesto.
     </div>
+
     <div>
-      <label>Monto</label>
-      <input type="number" formControlName="monto"/>
-      <small *ngIf="form.get('monto')?.invalid && form.get('monto')?.touched">Monto > 0</small>
+      <label for="tipoImpuesto">Tipo de Impuesto *</label>
+      <input 
+        id="tipoImpuesto"
+        type="text"
+        formControlName="tipoImpuesto"
+        placeholder="Ej: IGV, Renta, Predial..."
+        [class.ng-invalid]="form.get('tipoImpuesto')?.invalid && form.get('tipoImpuesto')?.touched"
+        [class.ng-valid]="form.get('tipoImpuesto')?.valid && form.get('tipoImpuesto')?.touched"
+      />
+      <small *ngIf="form.get('tipoImpuesto')?.touched && form.get('tipoImpuesto')?.errors?.['required']">
+        ⚠️ El tipo de impuesto es requerido
+      </small>
+      <small *ngIf="form.get('tipoImpuesto')?.touched && form.get('tipoImpuesto')?.errors?.['minlength']">
+        ⚠️ Debe tener al menos 2 caracteres
+      </small>
+      <small *ngIf="form.get('tipoImpuesto')?.touched && form.get('tipoImpuesto')?.errors?.['maxlength']">
+        ⚠️ Máximo 60 caracteres permitidos
+      </small>
     </div>
+
     <div>
-      <label>Fecha Vencimiento</label>
-      <input type="date" formControlName="fechaVencimiento"/>
-      <small *ngIf="form.get('fechaVencimiento')?.invalid && form.get('fechaVencimiento')?.touched">Fecha requerida</small>
+      <label for="monto">Monto (S/) *</label>
+      <input 
+        id="monto"
+        type="number" 
+        formControlName="monto"
+        placeholder="0.00"
+        step="0.01"
+        min="0.01"
+        [class.ng-invalid]="form.get('monto')?.invalid && form.get('monto')?.touched"
+        [class.ng-valid]="form.get('monto')?.valid && form.get('monto')?.touched"
+      />
+      <small *ngIf="form.get('monto')?.invalid && form.get('monto')?.touched">
+        ⚠️ El monto debe ser mayor a 0
+      </small>
     </div>
+
     <div>
-      <label>Estado</label>
-      <select formControlName="estado">
+      <label for="fechaVencimiento">Fecha de Vencimiento *</label>
+      <input 
+        id="fechaVencimiento"
+        type="date" 
+        formControlName="fechaVencimiento"
+        [class.ng-invalid]="form.get('fechaVencimiento')?.invalid && form.get('fechaVencimiento')?.touched"
+        [class.ng-valid]="form.get('fechaVencimiento')?.valid && form.get('fechaVencimiento')?.touched"
+      />
+      <small *ngIf="form.get('fechaVencimiento')?.invalid && form.get('fechaVencimiento')?.touched">
+        ⚠️ La fecha de vencimiento es requerida
+      </small>
+    </div>
+
+    <div>
+      <label for="estado">Estado del Registro *</label>
+      <select 
+        id="estado"
+        formControlName="estado"
+        [class.ng-invalid]="form.get('estado')?.invalid && form.get('estado')?.touched"
+        [class.ng-valid]="form.get('estado')?.valid && form.get('estado')?.touched"
+      >
         <option value="PENDIENTE">Pendiente</option>
         <option value="PAGADO">Pagado</option>
         <option value="VENCIDO">Vencido</option>
       </select>
     </div>
-    <button type="submit" [disabled]="form.invalid || loading">{{ loading ? 'Guardando...' : 'Guardar' }}</button>
-    <button type="button" (click)="volver()">Volver</button>
+
+    <div class="button-group">
+      <button type="submit" [disabled]="form.invalid || loading">
+        {{ loading ? 'Guardando...' : (editMode ? 'Actualizar' : 'Guardar') }}
+      </button>
+      <button type="button" (click)="volver()">Cancelar</button>
+    </div>
   </form>
 </section>

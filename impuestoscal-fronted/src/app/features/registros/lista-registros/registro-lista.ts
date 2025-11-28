@@ -9,7 +9,8 @@ import { TokenService } from '../../../core/services/token.service';
   selector: 'app-registro-lista',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
-  templateUrl: './registro-lista.html'
+  templateUrl: './registro-lista.html',
+  styleUrls: ['./registro-lista.css']
 })
 export class RegistroListaComponent implements OnInit {
   registros: Registro[] = [];
