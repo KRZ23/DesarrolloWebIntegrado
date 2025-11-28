@@ -19,4 +19,8 @@ export class TrabajadorService {
     const params = new HttpParams().set('mes', String(mes)).set('anio', String(anio));
     return this.http.get<ResumenPlanilla>(`${this.base}/resumen-planilla`, { params });
   }
+
+  generarPlanillaPdf(): Observable<Blob> {
+    return this.http.get(`${this.base}/planilla-pdf`, { responseType: 'blob' });
+  }
 }

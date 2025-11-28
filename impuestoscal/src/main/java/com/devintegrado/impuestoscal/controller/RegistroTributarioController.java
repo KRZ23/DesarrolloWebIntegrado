@@ -1,22 +1,32 @@
 package com.devintegrado.impuestoscal.controller;
 
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.devintegrado.impuestoscal.dto.RegistroTributarioDtos;
 import com.devintegrado.impuestoscal.model.EstadoRegistro;
 import com.devintegrado.impuestoscal.model.RegistroTributario;
 import com.devintegrado.impuestoscal.model.Usuario;
 import com.devintegrado.impuestoscal.repository.RegistroTributarioRepository;
 import com.devintegrado.impuestoscal.repository.UsuarioRepository;
-import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
+import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -66,6 +76,15 @@ public class RegistroTributarioController extends BaseController {
         Usuario u = getCurrentUser(auth);
         return registroRepository.findByTitularAndFechaVencimientoBeforeAndEstado(u, LocalDate.now(), EstadoRegistro.PENDIENTE)
                 .stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    @GetMapping("/{id}")
+    public RegistroTributarioDtos.Response obtener(Authentication auth, @PathVariable Long id) {
+        Usuario u = getCurrentUser(auth);
+        RegistroTributario reg = registroRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Registro no encontrado"));
+        validateOwnership(u, reg.getTitular().getId());
+        return toDto(reg);
     }
     
     @PutMapping("/{id}")

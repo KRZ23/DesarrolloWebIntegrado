@@ -50,6 +50,7 @@ form select {
   font-size: 1rem;
   transition: all 0.3s ease;
   background: #f9fafb;
+  color: #1e40af;
 }
 
 form input:focus,

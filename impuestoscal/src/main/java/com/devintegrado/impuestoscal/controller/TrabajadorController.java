@@ -3,6 +3,8 @@ package com.devintegrado.impuestoscal.controller;
 import java.net.URI;
 import java.util.List;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -13,12 +15,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.devintegrado.impuestoscal.dto.TrabajadorDtos;
 import com.devintegrado.impuestoscal.model.Usuario;
 import com.devintegrado.impuestoscal.repository.UsuarioRepository;
+import com.devintegrado.impuestoscal.service.PdfService;
 import com.devintegrado.impuestoscal.service.TrabajadorService;
 
 import jakarta.validation.Valid;
@@ -29,10 +31,12 @@ import jakarta.validation.Valid;
 public class TrabajadorController extends BaseController {
     
     private final TrabajadorService service;
+    private final PdfService pdfService;
     
-    public TrabajadorController(TrabajadorService service, UsuarioRepository usuarioRepository) {
+    public TrabajadorController(TrabajadorService service, UsuarioRepository usuarioRepository, PdfService pdfService) {
         super(usuarioRepository);
         this.service = service;
+        this.pdfService = pdfService;
     }
     
     @GetMapping
@@ -72,13 +76,13 @@ public class TrabajadorController extends BaseController {
         service.eliminar(id, usuario);
         return ResponseEntity.noContent().build();
     }
-    
-    @GetMapping("/resumen-planilla")
-    public ResponseEntity<TrabajadorDtos.ResumenPlanilla> calcularResumenPlanilla(
-            @RequestParam int mes,
-            @RequestParam int anio,
-            Authentication auth) {
-        Usuario usuario = getCurrentUser(auth);
-        return ResponseEntity.ok(service.calcularResumenPlanilla(usuario, mes, anio));
+
+    @GetMapping("/planilla-pdf")
+    public ResponseEntity<byte[]> generarPlanillaPdf(Authentication auth) {
+        byte[] pdf = pdfService.generarPlanillaTrabajadores(auth.getName());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=planilla_trabajadores.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 }

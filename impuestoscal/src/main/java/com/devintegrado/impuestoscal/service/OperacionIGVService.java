@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.devintegrado.impuestoscal.dto.OperacionIGVDtos;
+import com.devintegrado.impuestoscal.model.EstadoRegistro;
 import com.devintegrado.impuestoscal.model.OperacionIGV;
 import com.devintegrado.impuestoscal.model.TipoOperacionIGV;
 import com.devintegrado.impuestoscal.model.Usuario;
@@ -67,6 +68,7 @@ public class OperacionIGVService {
                 .descripcion(request.getDescripcion())
                 .empresa(empresa)
                 .activo(true)
+                .estado(request.getEstado() != null ? request.getEstado() : EstadoRegistro.PENDIENTE)
                 .build();
         
         operacion = repository.save(operacion);
@@ -112,6 +114,9 @@ public class OperacionIGVService {
         if (request.getDescripcion() != null) {
             operacion.setDescripcion(request.getDescripcion());
         }
+        if (request.getEstado() != null) {
+            operacion.setEstado(request.getEstado());
+        }
         
         operacion = repository.save(operacion);
         return toDto(operacion);
@@ -141,15 +146,22 @@ public class OperacionIGVService {
     
     @Transactional(readOnly = true)
     public OperacionIGVDtos.ResumenIGV calcularResumenMensual(Usuario empresa, int mes, int anio) {
-        BigDecimal igvVentas = repository.calcularIGVVentasMensual(empresa, mes, anio);
-        BigDecimal igvCompras = repository.calcularIGVComprasMensual(empresa, mes, anio);
-        BigDecimal baseVentas = repository.calcularBaseImponibleVentasMensual(empresa, mes, anio);
-        BigDecimal baseCompras = repository.calcularBaseImponibleComprasMensual(empresa, mes, anio);
-        
-        igvVentas = igvVentas != null ? igvVentas : BigDecimal.ZERO;
-        igvCompras = igvCompras != null ? igvCompras : BigDecimal.ZERO;
-        baseVentas = baseVentas != null ? baseVentas : BigDecimal.ZERO;
-        baseCompras = baseCompras != null ? baseCompras : BigDecimal.ZERO;
+        List<OperacionIGV> operaciones = repository.findByEmpresaAndMesAnio(empresa, mes, anio);
+
+        BigDecimal baseVentas = BigDecimal.ZERO;
+        BigDecimal igvVentas = BigDecimal.ZERO;
+        BigDecimal baseCompras = BigDecimal.ZERO;
+        BigDecimal igvCompras = BigDecimal.ZERO;
+
+        for (OperacionIGV op : operaciones) {
+            if (op.getTipo() == TipoOperacionIGV.VENTA) {
+                baseVentas = baseVentas.add(op.getBaseImponible() != null ? op.getBaseImponible() : BigDecimal.ZERO);
+                igvVentas = igvVentas.add(op.getIgv() != null ? op.getIgv() : BigDecimal.ZERO);
+            } else if (op.getTipo() == TipoOperacionIGV.COMPRA) {
+                baseCompras = baseCompras.add(op.getBaseImponible() != null ? op.getBaseImponible() : BigDecimal.ZERO);
+                igvCompras = igvCompras.add(op.getIgv() != null ? op.getIgv() : BigDecimal.ZERO);
+            }
+        }
         
         BigDecimal totalVentas = baseVentas.add(igvVentas);
         BigDecimal totalCompras = baseCompras.add(igvCompras);
@@ -158,8 +170,10 @@ public class OperacionIGVService {
         return OperacionIGVDtos.ResumenIGV.builder()
                 .mes(mes)
                 .anio(anio)
+                .baseVentas(baseVentas)
                 .totalVentas(totalVentas)
                 .igvVentas(igvVentas)
+                .baseCompras(baseCompras)
                 .totalCompras(totalCompras)
                 .igvCompras(igvCompras)
                 .igvAPagar(igvAPagar)
@@ -178,6 +192,7 @@ public class OperacionIGVService {
                 .igv(operacion.getIgv())
                 .montoTotal(operacion.getMontoTotal())
                 .descripcion(operacion.getDescripcion())
+                .estado(operacion.getEstado())
                 .activo(operacion.getActivo())
                 .fechaCreacion(operacion.getFechaCreacion())
                 .fechaActualizacion(operacion.getFechaActualizacion())

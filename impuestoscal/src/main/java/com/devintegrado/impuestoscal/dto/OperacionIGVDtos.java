@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.devintegrado.impuestoscal.model.EstadoRegistro;
 import com.devintegrado.impuestoscal.model.TipoOperacionIGV;
 
 import jakarta.validation.constraints.NotBlank;
@@ -40,6 +41,8 @@ public class OperacionIGVDtos {
         private BigDecimal baseImponible;
 
         private String descripcion;
+        
+        private EstadoRegistro estado;
     }
 
     @Data
@@ -54,6 +57,7 @@ public class OperacionIGVDtos {
         private String rucTercero;
         private BigDecimal baseImponible;
         private String descripcion;
+        private EstadoRegistro estado;
     }
 
     @Data
@@ -71,6 +75,7 @@ public class OperacionIGVDtos {
         private BigDecimal igv;
         private BigDecimal montoTotal;
         private String descripcion;
+        private EstadoRegistro estado;
         private Boolean activo;
         private LocalDateTime fechaCreacion;
         private LocalDateTime fechaActualizacion;
@@ -83,8 +88,10 @@ public class OperacionIGVDtos {
     public static class ResumenIGV {
         private Integer mes;
         private Integer anio;
+        private BigDecimal baseVentas;
         private BigDecimal totalVentas;
         private BigDecimal igvVentas;
+        private BigDecimal baseCompras;
         private BigDecimal totalCompras;
         private BigDecimal igvCompras;
         private BigDecimal igvAPagar; // IGV Ventas - IGV Compras

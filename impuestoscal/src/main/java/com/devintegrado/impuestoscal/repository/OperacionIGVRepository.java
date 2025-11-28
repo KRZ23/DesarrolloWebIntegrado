@@ -35,28 +35,28 @@ public interface OperacionIGVRepository extends JpaRepository<OperacionIGV, Long
     
     // Calcular total IGV de ventas por periodo
     @Query("SELECT SUM(o.igv) FROM OperacionIGV o WHERE o.empresa = :empresa " +
-           "AND o.tipo = 'VENTA' AND MONTH(o.fechaOperacion) = :mes " +
+           "AND o.tipo = com.devintegrado.impuestoscal.model.TipoOperacionIGV.VENTA AND MONTH(o.fechaOperacion) = :mes " +
            "AND YEAR(o.fechaOperacion) = :anio AND o.activo = true")
     BigDecimal calcularIGVVentasMensual(
         @Param("empresa") Usuario empresa, @Param("mes") int mes, @Param("anio") int anio);
     
     // Calcular total IGV de compras por periodo
     @Query("SELECT SUM(o.igv) FROM OperacionIGV o WHERE o.empresa = :empresa " +
-           "AND o.tipo = 'COMPRA' AND MONTH(o.fechaOperacion) = :mes " +
+           "AND o.tipo = com.devintegrado.impuestoscal.model.TipoOperacionIGV.COMPRA AND MONTH(o.fechaOperacion) = :mes " +
            "AND YEAR(o.fechaOperacion) = :anio AND o.activo = true")
     BigDecimal calcularIGVComprasMensual(
         @Param("empresa") Usuario empresa, @Param("mes") int mes, @Param("anio") int anio);
     
     // Calcular base imponible total de ventas
     @Query("SELECT SUM(o.baseImponible) FROM OperacionIGV o WHERE o.empresa = :empresa " +
-           "AND o.tipo = 'VENTA' AND MONTH(o.fechaOperacion) = :mes " +
+           "AND o.tipo = com.devintegrado.impuestoscal.model.TipoOperacionIGV.VENTA AND MONTH(o.fechaOperacion) = :mes " +
            "AND YEAR(o.fechaOperacion) = :anio AND o.activo = true")
     BigDecimal calcularBaseImponibleVentasMensual(
         @Param("empresa") Usuario empresa, @Param("mes") int mes, @Param("anio") int anio);
     
     // Calcular base imponible total de compras
     @Query("SELECT SUM(o.baseImponible) FROM OperacionIGV o WHERE o.empresa = :empresa " +
-           "AND o.tipo = 'COMPRA' AND MONTH(o.fechaOperacion) = :mes " +
+           "AND o.tipo = com.devintegrado.impuestoscal.model.TipoOperacionIGV.COMPRA AND MONTH(o.fechaOperacion) = :mes " +
            "AND YEAR(o.fechaOperacion) = :anio AND o.activo = true")
     BigDecimal calcularBaseImponibleComprasMensual(
         @Param("empresa") Usuario empresa, @Param("mes") int mes, @Param("anio") int anio);

@@ -20,6 +20,7 @@ export class TrabajadorListaComponent implements OnInit {
   anioResumen = new Date().getFullYear();
   resumen: ResumenPlanilla | null = null;
   cargandoResumen = false;
+  generandoPdf = false;
 
   constructor(private svc: TrabajadorService, private router: Router) {}
 
@@ -50,10 +51,29 @@ export class TrabajadorListaComponent implements OnInit {
 
   calcularResumen(): void {
     this.cargandoResumen = true;
-    this.resumen = null;
     this.svc.resumenPlanilla(this.mesResumen, this.anioResumen).subscribe({
       next: r => { this.resumen = r; this.cargandoResumen = false; },
       error: e => { console.error(e); this.cargandoResumen = false; }
+    });
+  }
+
+  descargarPdf(): void {
+    this.generandoPdf = true;
+    this.svc.generarPlanillaPdf().subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `planilla-trabajadores.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.generandoPdf = false;
+      },
+      error: (err) => {
+        console.error('Error generando PDF', err);
+        this.generandoPdf = false;
+        alert('Error al generar la planilla PDF');
+      }
     });
   }
 }

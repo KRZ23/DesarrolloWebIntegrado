@@ -62,6 +62,11 @@ public class OperacionIGV {
     @Column(length = 500)
     private String descripcion;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    @Builder.Default
+    private EstadoRegistro estado = EstadoRegistro.PENDIENTE;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean activo = true;

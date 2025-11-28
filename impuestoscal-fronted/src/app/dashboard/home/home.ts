@@ -35,7 +35,7 @@
 
 // src/app/dashboard/home/home.ts
 import { Component, OnInit } from '@angular/core';
-import { DashboardService, DashboardResumen, RegistroResp, RegistroCreate } from '../dashboard.service';
+import { DashboardService, DashboardResumen, RegistroResp, RegistroCreate, OperacionCreate, OperacionResp } from '../dashboard.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -54,27 +54,57 @@ export class Home implements OnInit {
   pendientes = 0;
   vencidos = 0;
   pagados = 0;
+  
+  // Nuevas métricas
+  ventasMes = 0;
+  comprasMes = 0;
+  igvEstimado = 0;
 
   registros: RegistroResp[] = [];
+  operaciones: OperacionResp[] = []; // Nueva lista
   proximos: RegistroResp[] = [];
 
   loadingResumen = false;
   loadingRegistros = false;
   error: string | null = null;
 
-  // quick create form
-  nuevo: RegistroCreate = { tipoImpuesto: '', monto: 0, fechaVencimiento: '' };
+  // quick create form (Ahora para Operaciones)
+  nuevaOperacion: OperacionCreate = { 
+    tipo: 'VENTA', 
+    numeroDocumento: '', 
+    fechaOperacion: new Date().toISOString().split('T')[0], 
+    razonSocialTercero: 'Cliente Rápido', 
+    rucTercero: '00000000000', 
+    baseImponible: 0, 
+    descripcion: 'Registro Rápido' 
+  };
   creando = false;
 
   canIGV = false;
   canRecibos = false;
   canTrabajadores = false;
 
+  // Modal Declaración
+  showDeclaracionModal = false;
+  declaracionMes: number = new Date().getMonth() + 1;
+  declaracionAnio: number = new Date().getFullYear();
+  generandoPdf = false;
+
+  // Modal Pago
+  showPagoModal = false;
+  pagoMonto: number = 0;
+  procesandoPago = false;
+  
+  // Lista de items a pagar en el modal
+  listaPorPagar: { id?: number; descripcion: string; monto: number; tipo: 'DEUDA' | 'IGV_MES'; selected: boolean }[] = [];
+  totalSeleccionado: number = 0;
+
   constructor(private dashboardService: DashboardService, private auth: AuthService, private router: Router, private tokenSvc: TokenService) {}
 
   ngOnInit(): void {
     this.cargarResumen();
     this.cargarRegistros();
+    this.cargarOperaciones(); // Cargar operaciones
     this.cargarProximos(7);
     const roles = this.tokenSvc.getRoles();
     this.canIGV = roles.includes('USUARIO_JURIDICO') || roles.includes('ADMIN');
@@ -91,6 +121,9 @@ export class Home implements OnInit {
         this.pendientes = data.pendientes;
         this.vencidos = data.vencidos;
         this.pagados = data.pagados;
+        this.ventasMes = data.ventasMes || 0;
+        this.comprasMes = data.comprasMes || 0;
+        this.igvEstimado = data.igvEstimado || 0;
         this.loadingResumen = false;
       },
       error: (err) => {
@@ -116,6 +149,16 @@ export class Home implements OnInit {
     });
   }
 
+  cargarOperaciones(): void {
+    this.dashboardService.listarOperaciones().subscribe({
+      next: (data) => {
+        // Mostrar solo las últimas 5
+        this.operaciones = data.sort((a, b) => new Date(b.fechaOperacion).getTime() - new Date(a.fechaOperacion).getTime()).slice(0, 5);
+      },
+      error: (err) => console.error('Error cargando operaciones', err)
+    });
+  }
+
   cargarProximos(dias = 7): void {
     this.dashboardService.proximosVencimientos(dias).subscribe({
       next: (data) => this.proximos = data,
@@ -123,33 +166,37 @@ export class Home implements OnInit {
     });
   }
 
-  crearRegistro(): void {
-    if (!this.nuevo.tipoImpuesto || !this.nuevo.fechaVencimiento || !this.nuevo.monto) {
-      alert('Completa tipo, monto y fecha de vencimiento.');
-      return;
-    }
-    this.creando = true;
-    this.dashboardService.crearRegistro(this.nuevo).subscribe({
-      next: () => {
-        this.creando = false;
-        this.nuevo = { tipoImpuesto: '', monto: 0, fechaVencimiento: '' };
-        this.cargarResumen();
-        this.cargarRegistros();
-        this.cargarProximos(7);
-      },
-      error: (err) => {
-        console.error('Error crear registro', err);
-        alert(err?.error?.message || 'Error al crear registro');
-        this.creando = false;
-      }
-    });
-  }
+  // Método antiguo eliminado o reemplazado por crearOperacionRapida
+  // crearRegistro(): void { ... }
 
   eliminar(id: number) {
     if (!confirm('¿Eliminar registro?')) return;
     this.dashboardService.eliminarRegistro(id).subscribe({
       next: () => { this.cargarResumen(); this.cargarRegistros(); },
       error: (err) => { console.error(err); alert('Error al eliminar'); }
+    });
+  }
+
+  cambiarEstado(r: RegistroResp, nuevoEstado: string) {
+    if (!confirm(`¿Cambiar estado a ${nuevoEstado}?`)) return;
+    
+    const payload = {
+      tipoImpuesto: r.tipoImpuesto,
+      monto: r.monto,
+      fechaVencimiento: r.fechaVencimiento,
+      estado: nuevoEstado
+    };
+
+    this.dashboardService.actualizarRegistro(r.id, payload).subscribe({
+      next: () => {
+        this.cargarResumen();
+        this.cargarRegistros();
+        this.cargarProximos(7);
+      },
+      error: (err) => {
+        console.error('Error actualizando estado', err);
+        alert('Error al actualizar estado');
+      }
     });
   }
 
@@ -228,21 +275,165 @@ export class Home implements OnInit {
     this.router.navigate(['/iniciar-sesion']);
   }
 
-  presentarDeclaracion(): void {
+  abrirDeclaracionModal(): void {
     const now = new Date();
-    const mes = now.getMonth() + 1;
-    const anio = now.getFullYear();
-    
-    this.dashboardService.generarDeclaracionPdf(mes, anio).subscribe({
-      next: (blob) => {
+    this.declaracionMes = now.getMonth() + 1;
+    this.declaracionAnio = now.getFullYear();
+    this.showDeclaracionModal = true;
+  }
+
+  cerrarDeclaracionModal(): void {
+    this.showDeclaracionModal = false;
+  }
+
+  presentarDeclaracion(): void {
+    this.abrirDeclaracionModal();
+  }
+
+  confirmarDeclaracion() {
+    this.generandoPdf = true;
+    this.dashboardService.generarDeclaracionPdf(this.declaracionMes, this.declaracionAnio).subscribe({
+      next: (blob: Blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `declaracion-${mes}-${anio}.pdf`;
+        a.download = `declaracion-${this.declaracionAnio}-${this.declaracionMes}.pdf`;
         a.click();
         window.URL.revokeObjectURL(url);
+        this.generandoPdf = false;
+        this.cerrarDeclaracionModal();
       },
-      error: (err) => console.error('Error generando PDF', err)
+      error: (err: any) => {
+        console.error('Error generando PDF', err);
+        this.generandoPdf = false;
+        alert('Error al generar la declaración');
+      }
+    });
+  }
+
+  abrirPagoModal() {
+    this.showPagoModal = true;
+    this.listaPorPagar = [];
+    
+    // 1. Agregar deudas pendientes
+    this.dashboardService.listarPendientes().subscribe({
+      next: (pendientes) => {
+        pendientes.forEach(p => {
+          this.listaPorPagar.push({
+            id: p.id,
+            descripcion: `${p.tipoImpuesto} (Vence: ${p.fechaVencimiento})`,
+            monto: p.monto,
+            tipo: 'DEUDA',
+            selected: true
+          });
+        });
+        
+        // 2. Agregar IGV del mes si es positivo
+        if (this.igvEstimado > 0) {
+          this.listaPorPagar.push({
+            descripcion: `IGV Estimado del Mes Actual`,
+            monto: this.igvEstimado,
+            tipo: 'IGV_MES',
+            selected: true
+          });
+        }
+        
+        this.calcularTotalSeleccionado();
+      },
+      error: (err) => console.error('Error cargando pendientes para pago', err)
+    });
+  }
+
+  calcularTotalSeleccionado() {
+    this.totalSeleccionado = this.listaPorPagar
+      .filter(item => item.selected)
+      .reduce((sum, item) => sum + item.monto, 0);
+  }
+
+  toggleSeleccion(item: any) {
+    item.selected = !item.selected;
+    this.calcularTotalSeleccionado();
+  }
+
+  toggleTodos(event: any) {
+    const checked = event.target.checked;
+    this.listaPorPagar.forEach(item => item.selected = checked);
+    this.calcularTotalSeleccionado();
+  }
+
+  get todosSeleccionados(): boolean {
+    return this.listaPorPagar.length > 0 && this.listaPorPagar.every(i => i.selected);
+  }
+
+  cerrarPagoModal() {
+    this.showPagoModal = false;
+  }
+
+  realizarPago() {
+    const seleccionados = this.listaPorPagar.filter(i => i.selected);
+    if (seleccionados.length === 0) {
+      alert('Seleccione al menos un ítem para pagar.');
+      return;
+    }
+
+    this.procesandoPago = true;
+    
+    const registroIds = seleccionados.filter(i => i.tipo === 'DEUDA').map(i => i.id!);
+    const pagarIgvMes = seleccionados.some(i => i.tipo === 'IGV_MES');
+
+    this.dashboardService.realizarPago(registroIds, pagarIgvMes).subscribe({
+      next: () => {
+        this.procesandoPago = false;
+        this.showPagoModal = false;
+        alert('Pago realizado con éxito.');
+        this.cargarResumen(); // Recargar contadores
+        this.cargarRegistros(); // Recargar lista
+      },
+      error: (err) => {
+        console.error('Error al realizar pago', err);
+        this.procesandoPago = false;
+        alert('Error al procesar el pago');
+      }
+    });
+  }
+
+  crearOperacionRapida(): void {
+    if (!this.nuevaOperacion.baseImponible || this.nuevaOperacion.baseImponible <= 0) {
+      alert('Ingrese un monto válido');
+      return;
+    }
+    this.creando = true;
+    // Generar número de documento aleatorio para rapidez
+    this.nuevaOperacion.numeroDocumento = 'RAP-' + Math.floor(Math.random() * 10000);
+    
+    this.dashboardService.crearOperacion(this.nuevaOperacion).subscribe({
+      next: (resp) => {
+        this.creando = false;
+        alert('Operación registrada con éxito');
+        this.nuevaOperacion.baseImponible = 0; // Reset
+        this.cargarResumen(); // Actualizar contadores
+        this.cargarOperaciones(); // Actualizar lista
+      },
+      error: (err) => {
+        console.error('Error creando operación', err);
+        this.creando = false;
+        alert('Error al registrar operación');
+      }
+    });
+  }
+
+  cambiarEstadoOperacion(op: OperacionResp, nuevoEstado: string) {
+    if (!confirm(`¿Marcar operación como ${nuevoEstado}?`)) return;
+
+    this.dashboardService.actualizarOperacion(op.id, { estado: nuevoEstado }).subscribe({
+      next: () => {
+        this.cargarOperaciones();
+        this.cargarResumen();
+      },
+      error: (err) => {
+        console.error('Error actualizando estado de operación', err);
+        alert('Error al actualizar estado');
+      }
     });
   }
 }

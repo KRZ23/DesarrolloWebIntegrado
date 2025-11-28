@@ -1,14 +1,19 @@
 package com.devintegrado.impuestoscal.config;
 
-import com.devintegrado.impuestoscal.model.*;
-import com.devintegrado.impuestoscal.repository.RolRepository;
-import com.devintegrado.impuestoscal.repository.UsuarioRepository;
+import java.util.Set;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Set;
+import com.devintegrado.impuestoscal.model.OperacionIGV;
+import com.devintegrado.impuestoscal.model.Rol;
+import com.devintegrado.impuestoscal.model.RoleName;
+import com.devintegrado.impuestoscal.model.TipoOperacionIGV;
+import com.devintegrado.impuestoscal.model.Usuario;
+import com.devintegrado.impuestoscal.repository.RolRepository;
+import com.devintegrado.impuestoscal.repository.UsuarioRepository;
 
 @Configuration
 public class SeedDataConfig {
@@ -16,6 +21,7 @@ public class SeedDataConfig {
     @Bean
     CommandLineRunner seedData(RolRepository rolRepository,
                                UsuarioRepository usuarioRepository,
+                               com.devintegrado.impuestoscal.repository.OperacionIGVRepository operacionRepository,
                                PasswordEncoder passwordEncoder) {
         return args -> {
             // Roles
@@ -53,6 +59,45 @@ public class SeedDataConfig {
                 usuarioRepository.save(u1);
                 usuarioRepository.save(u2);
                 usuarioRepository.save(a1);
+
+                // Datos de prueba para OperacionIGV (Noviembre 2025)
+                java.time.LocalDate fecha = java.time.LocalDate.of(2025, 11, 15);
+                
+                // Venta 1
+                operacionRepository.save(OperacionIGV.builder()
+                    .tipo(TipoOperacionIGV.VENTA)
+                    .numeroDocumento("F001-123")
+                    .fechaOperacion(fecha)
+                    .razonSocialTercero("Cliente X")
+                    .rucTercero("20123456789")
+                    .baseImponible(new java.math.BigDecimal("1000.00"))
+                    .descripcion("Venta de servicios")
+                    .empresa(u2)
+                    .build());
+
+                // Venta 2
+                operacionRepository.save(OperacionIGV.builder()
+                    .tipo(TipoOperacionIGV.VENTA)
+                    .numeroDocumento("F001-124")
+                    .fechaOperacion(fecha.plusDays(1))
+                    .razonSocialTercero("Cliente Y")
+                    .rucTercero("20987654321")
+                    .baseImponible(new java.math.BigDecimal("2500.00"))
+                    .descripcion("Venta de productos")
+                    .empresa(u2)
+                    .build());
+
+                // Compra 1
+                operacionRepository.save(OperacionIGV.builder()
+                    .tipo(TipoOperacionIGV.COMPRA)
+                    .numeroDocumento("F002-999")
+                    .fechaOperacion(fecha.minusDays(2))
+                    .razonSocialTercero("Proveedor Z")
+                    .rucTercero("20555666777")
+                    .baseImponible(new java.math.BigDecimal("800.00"))
+                    .descripcion("Compra de insumos")
+                    .empresa(u2)
+                    .build());
             }
         };
     }
